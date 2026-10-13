@@ -66,7 +66,7 @@ function loadSettings(): Settings {
   }
 }
 
-export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boolean }) {
+export function Studio({ gate, live: liveAvailable, version }: { gate: boolean; live: boolean; version: string }) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [presenting, setPresenting] = useState(false);
@@ -708,6 +708,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
               <span>Visa koden medan den skrivs</span>
               <button className={`toggle${settings.code ? " on" : ""}`} onClick={() => setSettings((s) => ({ ...s, code: !s.code }))} aria-label="Visa kod" />
             </div>
+            <p className="note version">Version {version}</p>
           </div>
         )}
       </header>

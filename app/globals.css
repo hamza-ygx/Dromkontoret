@@ -400,3 +400,4 @@ button { cursor: pointer; }
 .sketch-grid.wide .sketch img { aspect-ratio: 1.75; object-position: center; }
 .sketch-grid.wide .sketch .label { font-size: 14px; font-weight: 600; padding: 8px 10px 2px; }
 .sketch .sub { display: block; white-space: pre-line; padding: 0 8px 7px; font-size: 11.5px; line-height: 1.35; color: var(--muted); font-variant-numeric: tabular-nums; }
+.popover .version { font-family: var(--font-mono); font-size: 11px; margin-top: -6px; }
