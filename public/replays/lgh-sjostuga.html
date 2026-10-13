@@ -6,6 +6,7 @@
 <title>Sjöstuga · Värmdö</title>
 <style>
   @property --k{syntax:'<number>';inherits:true;initial-value:1}
+  @property --m{syntax:'<length>';inherits:true;initial-value:0px}
   :root{--ink:#1b2236;--ink2:#4a5368;--mute:#8a91a3;--line:#e6e2da;--bg:#eeebe5;--acc:#e8590c;--accs:#fff1e8;--red:#a3362b;--red2:#87291f}
   *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
   body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--bg);overflow:hidden;-webkit-font-smoothing:antialiased}
@@ -36,8 +37,10 @@
   .tot small{display:block;font-size:11.5px;color:var(--mute)}.tot .lbl{font-weight:700;font-size:14px}
   .tot strong{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--acc);font-variant-numeric:tabular-nums;line-height:1.1}
   /* scen */
-  .stage{grid-column:1;grid-row:1;position:relative;min-height:0;border-radius:20px;overflow:hidden;container-type:size;border:1px solid #e3ded5;background:radial-gradient(60% 46% at var(--gx,71.6%) var(--gy,94%),rgba(255,186,112,var(--go,.22)),rgba(255,186,112,0) 72%),radial-gradient(130% 95% at 50% 40%,#fdfbf7 0,#ece7de 60%,#ddd6ca);perspective:max(880px,150vh);perspective-origin:50% 40%;cursor:grab;user-select:none;touch-action:none;box-shadow:0 12px 32px -20px rgba(27,34,54,.35)}
-  .stage:active{cursor:grabbing}.stage.flat{perspective:9000px}
+  .stage{grid-column:1;grid-row:1;position:relative;min-height:0;border-radius:20px;overflow:hidden;container-type:size;border:1px solid #e3ded5;background:radial-gradient(130% 95% at 50% 40%,#fdfbf7 0,#ece7de 60%,#ddd6ca);perspective:max(880px,150vh);perspective-origin:50% 40%;cursor:grab;user-select:none;touch-action:none;box-shadow:0 12px 32px -20px rgba(27,34,54,.35)}
+  .glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 46% at var(--gx,71.6%) var(--gy,94%),rgba(255,186,112,var(--go,.22)),rgba(255,186,112,0) 72%)}
+  /* grabbing-markören läggs på ett eget lager: cursor ärvs och skulle annars räkna om hela modellen */
+  .stage:active::after{content:"";position:absolute;inset:0;z-index:4;cursor:grabbing}.stage.flat{perspective:9000px}
   .scene{--rx:52deg;--rz:152deg;--zm:1;--m:clamp(20px,min(4.1cqw,5cqh),72px);position:absolute;left:50%;top:51%;width:0;height:0;transform-style:preserve-3d;transform:scale3d(var(--zm),var(--zm),var(--zm)) rotateX(var(--rx)) rotateZ(var(--rz))}
   .plan,.g,.roof{position:absolute;left:0;top:0;transform-style:preserve-3d}.plan{left:calc(-7.5*var(--m));top:calc(-5.2*var(--m))}
   .g{transform:translateZ(calc(.4*var(--m)))}
@@ -187,6 +190,7 @@
   </section>
 </aside>
 <section class="stage" id="stage">
+  <i class="glow" id="glow"></i>
   <div class="ov tl"><div class="sel" id="sel"><small>Planlösning</small><strong>3 rok <em>63 m²</em></strong><span>Klicka på ett rum · dra för att rotera</span></div></div>
   <div class="ov tr">
     <div class="grp"><button class="on" data-v="3d">3D</button><button data-v="2d">2D</button></div>
@@ -301,27 +305,38 @@
 <script>
 (() => {
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-  const stage = $('#stage'), scene = $('#scene'), needle = $('#needle');
+  const stage = $('#stage'), scene = $('#scene'), needle = $('#needle'), glow = $('#glow');
+  // Rotationen skrivs direkt som transform på de få element som behöver den – inga ärvda variabler
+  // på #scene, så modellens ~460 element slipper stilberäkning varje bildruta.
+  const labels = $$('.room p'), boards = $$('.bb');
   const D = { rx: 52, rz: 152, zm: 1 }, V = { ...D }, T = { ...D };
   const LOW = ['lW', 'lE', 'lS', 'lN', 'lH', 'lV'];
-  let flat = false, spin = true, drag = null, last = performance.now(), lowKey = '';
+  let flat = false, spin = true, drag = null, last = performance.now(), lowKey = '', glowKey = '', dirty = false;
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const near = (a, ref) => a + Math.round((ref - a) / 360) * 360;
 
   function apply() {
-    scene.style.setProperty('--rx', V.rx.toFixed(2) + 'deg');
-    scene.style.setProperty('--rz', V.rz.toFixed(2) + 'deg');
-    scene.style.setProperty('--zm', V.zm.toFixed(3));
+    const zm = V.zm.toFixed(3), rx = V.rx.toFixed(2), rz = V.rz.toFixed(2);
+    scene.style.transform = `scale3d(${zm},${zm},${zm}) rotateX(${rx}deg) rotateZ(${rz}deg)`;
+    const lt = `translate(-50%,-50%) rotate(${-rz}deg)`;
+    for (const el of labels) el.style.transform = lt;
+    const bt = `translateZ(calc(var(--z)*var(--m) + 3px)) rotateZ(${-rz}deg) rotateX(${-rx}deg)`;
+    for (const el of boards) el.style.transform = bt;
     needle.style.transform = `rotate(${(90 + V.rz).toFixed(1)}deg)`;
     const r = V.rz * Math.PI / 180, s = Math.sin(r), c = Math.cos(r);
     // Väggar vars utsida vetter mot kameran sänks, liksom innerväggar som står tvärs synlinjen.
     const on = flat ? [] : LOW.filter((k, i) => [-c > .3, c > .3, -s > .3, s > .3, Math.abs(c) > .42, Math.abs(s) > .42][i]);
     const key = on.join();
     if (key !== lowKey) { lowKey = key; LOW.forEach(k => scene.classList.toggle(k, on.includes(k))); }
-    // Kvällssolen står i väster, över sjön.
-    stage.style.setProperty('--gx', (50 + 46 * s).toFixed(1) + '%');
-    stage.style.setProperty('--gy', (50 - 50 * c).toFixed(1) + '%');
-    stage.style.setProperty('--go', flat ? .22 : (.22 + .42 * Math.max(0, c)).toFixed(3));
+    // Kvällssolen står i väster, över sjön (eget lager, ärvs inte in i modellen).
+    const gx = (50 + 46 * s).toFixed(1), gy = (50 - 50 * c).toFixed(1), go = flat ? '0.22' : (.22 + .42 * Math.max(0, c)).toFixed(3);
+    const gk = `${gx}|${gy}|${go}`;
+    if (gk !== glowKey) {
+      glowKey = gk;
+      glow.style.setProperty('--gx', gx + '%');
+      glow.style.setProperty('--gy', gy + '%');
+      glow.style.setProperty('--go', go);
+    }
   }
   function tick(now) {
     const dt = Math.min(100, now - last); last = now;
@@ -331,7 +346,7 @@
       const d = T[k] - V[k];
       if (Math.abs(d) > .002) { V[k] += d * Math.min(1, dt * .009); moved = true; } else if (d) { V[k] = T[k]; moved = true; }
     }
-    if (moved) apply();
+    if (moved || dirty) { dirty = false; apply(); }
     requestAnimationFrame(tick);
   }
   function setSpin(onOff) { spin = onOff; $('#spin').classList.toggle('on', onOff); }
@@ -362,7 +377,7 @@
     setSpin(false);
     V.rz = T.rz = V.rz + dx * .4;
     if (!flat) V.rx = T.rx = clamp(V.rx - dy * .3, 12, 82);
-    apply();
+    dirty = true; // ritas i nästa bildruta – flera pointermove per bildruta ger bara en uppdatering
   });
   const end = e => {
     if (!drag) return;
