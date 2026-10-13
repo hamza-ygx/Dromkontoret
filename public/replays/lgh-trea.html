@@ -11,10 +11,11 @@ html,body{height:100%}
 body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:#f6f4f0;-webkit-font-smoothing:antialiased;display:grid;grid-template-columns:minmax(0,1fr) 340px;overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* scen */
-.stage{position:relative;height:100vh;overflow:hidden;background:radial-gradient(ellipse 58% 52% at 50% 57%,#fdfbf7,#f0ebe2 58%,#e3dccf);perspective:calc(var(--m)*19);perspective-origin:50% 36%;cursor:grab;touch-action:none;user-select:none;transition:perspective .9s;--rx:52deg;--rz:-28deg;--s:1;--cs:.35;--cw:1.05;--cn:2.6;--ce:2.6;--cx:1.1;--cy:1.45}
+.stage{position:relative;height:100vh;overflow:hidden;background:radial-gradient(ellipse 58% 52% at 50% 57%,#fdfbf7,#f0ebe2 58%,#e3dccf);perspective:calc(var(--m)*19);perspective-origin:50% 36%;cursor:grab;touch-action:none;user-select:none;transition:perspective .9s}
 .stage.grab{cursor:grabbing}
 .stage.flat{perspective:calc(var(--m)*120)}
-.world{position:absolute;left:50%;top:47%;width:0;height:0;transform-style:preserve-3d;transform:translateY(calc(var(--m)*.35)) scale3d(var(--s),var(--s),var(--s)) rotateX(var(--rx)) rotateZ(var(--rz))}
+/* fast cursor på .world: annars ärver hela modellen cursor-bytet vid .grab och hela modellen stilberäknas om */
+.world{position:absolute;left:50%;top:47%;width:0;height:0;cursor:pointer;transform-style:preserve-3d;transform:translateY(calc(var(--m)*.35)) scale3d(1,1,1) rotateX(52deg) rotateZ(-28deg)}
 .plan{position:absolute;left:calc(var(--m)*-5);top:calc(var(--m)*-3.25);transform-style:preserve-3d}
 .plan>*{position:absolute;left:calc(var(--x)*var(--m));top:calc(var(--y)*var(--m));width:calc(var(--w)*var(--m));height:calc(var(--d)*var(--m));pointer-events:none}
 .shadow{transform:translateZ(calc(var(--m)*-.9));background:#4a3a2a;opacity:.32;filter:blur(calc(var(--m)*.55));border-radius:calc(var(--m)*.8)}
@@ -30,7 +31,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @keyframes fade{from{opacity:0}}
 .slab{--lift:0px;--z0:-.32;--z1:0;--t:#e6ddcf;--c:linear-gradient(#e9e2d6 0 30%,#d6cdbf);--sa:0;animation:fade .5s backwards}
 .w{--z1:2.6;--t:#283045;--c:#f7f3ed;--sa:.2}
-.cs{--hc:var(--cs)}.cn{--hc:var(--cn)}.ce{--hc:var(--ce)}.cw{--hc:var(--cw)}.ix{--hc:var(--cx)}.iy{--hc:var(--cy)}
+/* väggar mot kameran sänks: JS lägger varje vägg i ett lätt omslag (.lw) och sätter transform/skugga
+   på omslaget bara när väggens nivå ändras – resten av modellen stilberäknas aldrig om vid rotation */
+.plan>.lw{transform-style:preserve-3d;transition:transform .5s cubic-bezier(.3,.7,.3,1)}
+.lw>*{position:absolute;inset:0;pointer-events:none}
 .sl{--z1:.9}.hd{--z0:2.1;--sa:0}
 .g{--z0:.9;--z1:2.1;--sa:0;--t:#0000;--c:linear-gradient(118deg,#bfe0f3a6 0 38%,#ffffffd9 44%,#a9d0ea99 50%,#cbe6f6a0)}
 .g::before,.g::after,.g i::before,.g i::after,.gd::before,.gd::after,.gd i::before,.gd i::after{border:2px solid #fbfaf7}
@@ -69,7 +73,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .room.on{box-shadow:inset 0 0 0 3px var(--acc),inset 0 0 calc(var(--m)*.5) #5a381a38}
 .deck{--fl:repeating-linear-gradient(0deg,#b38d64 0 calc(var(--m)*.13),#94704d 0 calc(var(--m)*.14))}
 .tile{--fl:linear-gradient(90deg,#0000 calc(var(--m)*.29),#c6cbd1 0) 0 0/calc(var(--m)*.3) calc(var(--m)*.3),linear-gradient(#0000 calc(var(--m)*.29),#c6cbd1 0) 0 0/calc(var(--m)*.3) calc(var(--m)*.3),#eceef0}
-.room p{position:absolute;left:var(--lx,50%);top:var(--ly,50%);transform:translate(-50%,-50%) translateZ(6px) rotate(calc(var(--rz)*-1));padding:.25em .7em .3em;border-radius:.6em;background:#ffffffe0;box-shadow:0 2px 6px -2px #1b223640;font-size:calc(var(--m)*.2);line-height:1.15;text-align:center;white-space:nowrap;color:var(--ink2);pointer-events:none;transition:background .25s,color .25s}
+.room p{position:absolute;left:var(--lx,50%);top:var(--ly,50%);transform:translate(-50%,-50%) translateZ(6px) rotate(28deg);padding:.25em .7em .3em;border-radius:.6em;background:#ffffffe0;box-shadow:0 2px 6px -2px #1b223640;font-size:calc(var(--m)*.2);line-height:1.15;text-align:center;white-space:nowrap;color:var(--ink2);pointer-events:none;transition:background .25s,color .25s}
 .room p b{display:block;font-size:1.12em;color:var(--ink)}
 .room.on p{background:var(--acc);color:#ffe8da}.room.on p b{color:#fff}
 .rug{transform:translateZ(1.6px);border-radius:3px;animation:fade .6s backwards}
@@ -98,7 +102,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .chip:hover{border-color:#d3ccc0;color:var(--ink)}
 .chip.on{background:var(--acc);border-color:var(--acc);color:#fff}.chip.on em{color:#ffe3d1}
 .cmp{width:62px;height:62px;border-radius:50%;display:grid;place-items:center}
-.cmp svg{width:44px;height:44px;transform:rotate(var(--rz))}
+.cmp svg{width:44px;height:44px;transform:rotate(-28deg)}
 /* panel */
 aside{height:100vh;overflow:auto;background:#fff;border-left:1px solid var(--line);padding:20px 22px 18px;display:flex;flex-direction:column;gap:14px;box-shadow:-10px 0 30px -24px #1b223666}
 .eyebrow{font-size:11px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--acc)}
@@ -351,21 +355,44 @@ input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15)}
 <script>
 (() => {
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-  const stage = $('#stage'), clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const stage = $('#stage'), world = $('#world'), clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const labels = $$('.room p'), needle = $('.cmp svg');
   const HOME = { rx: 52, rz: -28, s: 1 }, T = { ...HOME }, V = { ...HOME };
-  let flat = false, auto = true, drag = null, last = performance.now(), dirty = true;
+  let flat = false, auto = true, drag = null, last = performance.now(), dirty = true, lrz = null;
 
-  // Väggar som vetter mot kameran sänks: 2,6 m → 0,35 m
-  const ease = (d, a, b) => { const t = clamp((d - a) / b, 0, 1) * clamp(V.rx / 30, 0, 1); return t * t * (3 - 2 * t); };
-  const lower = d => (2.6 - 2.25 * ease(d, .12, .5)).toFixed(3), inner = d => (2.6 - 1.5 * ease(Math.abs(d), .15, .45)).toFixed(3);
+  // Väggar som vetter mot kameran sänks: 2,6 m → 0,35 m (innerväggar → 1,1 m).
+  // Nivån kvantiseras och sätts bara när den faktiskt ändras, på väggarnas omslag (.lw);
+  // CSS-transition på omslagets transform gör rörelsen mjuk.
+  const Q = 8, ease = (d, a, b) => { const t = clamp((d - a) / b, 0, 1) * clamp(V.rx / 30, 0, 1); return Math.round(t * t * (3 - 2 * t) * Q) / Q; };
+  const lower = d => 2.6 - 2.25 * ease(d, .12, .5), inner = d => 2.6 - 1.5 * ease(Math.abs(d), .15, .45);
+  const groups = ['cs', 'cn', 'ce', 'cw', 'ix', 'iy'].map(c => ({ v: null, els: $$('.plan>.' + c).map(el => {
+    const cs = getComputedStyle(el), num = (p, d) => { const v = parseFloat(cs.getPropertyValue(p)); return isNaN(v) ? d : v; };
+    const w = document.createElement('div'), z0 = num('--z0', 0), z1 = num('--z1', 1), lift = num('--lift', 2);
+    w.className = 'lw';
+    for (const p of ['--x', '--y', '--w', '--d']) w.style.setProperty(p, el.style.getPropertyValue(p));
+    el.before(w); w.append(el);
+    // skuggan flyttas till omslaget (ligger i golvplanet) för väggar som står på golvet
+    const sa = z0 ? 0 : num('--sa', .36);
+    if (sa) el.style.boxShadow = 'none';
+    return { w, z0, z1, lift, sa };
+  }) }));
+  // Kartlägger väggens z0..z1 till originalets min(z0,L)..min(z1,L) med en affin z-avbildning.
+  function level(e, L) {
+    const zb = Math.min(e.z0, L), h = Math.max(0, Math.min(e.z1, L) - zb), k = Math.max(.001, h / (e.z1 - e.z0)), st = e.w.style;
+    st.transform = `translateZ(calc(var(--m)*${(zb - k * e.z0).toFixed(4)} + ${((1 - k) * e.lift).toFixed(3)}px)) scale3d(1,1,${k.toFixed(4)})`;
+    if (e.sa) st.boxShadow = `calc(var(--m)*${(h * .3).toFixed(4)}) calc(var(--m)*${(h * -.24).toFixed(4)}) calc(var(--m)*${(h * .5).toFixed(4)} + 3px) rgba(58,40,22,${e.sa})`;
+  }
   function apply() {
-    const a = V.rz * Math.PI / 180, cx = Math.sin(a), cy = Math.cos(a), st = stage.style;
-    st.setProperty('--rx', V.rx.toFixed(2) + 'deg');
-    st.setProperty('--rz', V.rz.toFixed(2) + 'deg');
-    st.setProperty('--s', V.s.toFixed(3));
-    st.setProperty('--cs', lower(cy)); st.setProperty('--cn', lower(-cy));
-    st.setProperty('--ce', lower(cx)); st.setProperty('--cw', lower(-cx));
-    st.setProperty('--cx', inner(cy)); st.setProperty('--cy', inner(cx));
+    const a = V.rz * Math.PI / 180, cx = Math.sin(a), cy = Math.cos(a), s = V.s.toFixed(3);
+    world.style.transform = `translateY(calc(var(--m)*.35)) scale3d(${s},${s},${s}) rotateX(${V.rx.toFixed(2)}deg) rotateZ(${V.rz.toFixed(2)}deg)`;
+    const rz = V.rz.toFixed(1);
+    if (rz !== lrz) {
+      lrz = rz;
+      for (const p of labels) p.style.transform = `translate(-50%,-50%) translateZ(6px) rotate(${-rz}deg)`;
+      needle.style.transform = `rotate(${rz}deg)`;
+    }
+    const L = [lower(cy), lower(-cy), lower(cx), lower(-cx), inner(cy), inner(cx)];
+    groups.forEach((g, i) => { if (g.v !== L[i]) { g.v = L[i]; for (const e of g.els) level(e, L[i]); } });
   }
   function frame(t) {
     const dt = Math.min(64, t - last); last = t;
