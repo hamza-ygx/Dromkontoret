@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Anvil } from "../icons";
 
 export default function Login() {
   const [code, setCode] = useState("");
@@ -32,8 +31,14 @@ export default function Login() {
   return (
     <main className="login">
       <form onSubmit={submit} className={shake ? "shake" : ""}>
-        <Anvil />
-        <h1>Smedjan</h1>
+        <div className="mark">
+          <span className="mono">RKJH</span>
+          <span className="firm">
+            Revisionskonsulterna
+            <br />J Hägglund
+          </span>
+        </div>
+        <h1>Drömboendet</h1>
         <p>Ange koden för att fortsätta</p>
         <input
           type="password"
@@ -45,8 +50,8 @@ export default function Login() {
           aria-label="Kod"
         />
         <div className="err" role="alert">{error}</div>
-        <button className="btn-forge" disabled={busy || !code}>
-          {busy ? "Kontrollerar…" : "Gå in i smedjan"}
+        <button className="build" disabled={busy || !code}>
+          {busy ? "Kontrollerar…" : "Fortsätt"}
         </button>
       </form>
     </main>

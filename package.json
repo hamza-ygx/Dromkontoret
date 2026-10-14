@@ -1,21 +1,18 @@
 {
-  "name": "smedjan",
+  "name": "dromboendet",
   "version": "0.1.0",
   "private": true,
-  "description": "Live demo: a sketch or a sentence goes in, a working app is forged in front of the audience.",
+  "description": "RKJH Drömboendet: configure a home and watch it build in 3D with price, room sizes and a shopping list.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit",
-    "sketches": "node scripts/render-sketches.mjs",
-    "record": "tsx scripts/record.ts"
+    "lint": "tsc --noEmit"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0",
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
@@ -25,8 +22,6 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "playwright-core": "^1.56.1",
-    "roughjs": "^4.6.6",
-    "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   }
 }
