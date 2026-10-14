@@ -61,7 +61,7 @@ export function Designer({ version }: { version: string }) {
   const [cfg, setCfg] = useState<Config>(START);
   const [built, setBuilt] = useState<Config | null>(null);
   const [buildId, setBuildId] = useState(0);
-  const [quick, setQuick] = useState(false);
+  const [open, setOpen] = useState(true);
   const [selItem, setSelItem] = useState<string | null>(null);
   const [selRoom, setSelRoom] = useState<string | null>(null);
   const [tab, setTab] = useState<"rum" | "inredning">("rum");
@@ -69,30 +69,40 @@ export function Designer({ version }: { version: string }) {
 
   const plan = useMemo(() => (built ? generate(built) : null), [built]);
   const est = useMemo(() => (plan ? estimate(plan) : null), [plan]);
-  const liveArea = useMemo(() => (built ? null : generate(cfg).livingArea), [cfg, built]) ?? plan?.livingArea ?? 0;
+  const draftArea = useMemo(() => generate(cfg).livingArea, [cfg]);
 
-  const build = useCallback((c: Config, fast: boolean) => {
-    setQuick(fast);
+  const build = useCallback((c: Config) => {
     setBuilt(c);
     setBuildId((n) => n + 1);
     setSelItem(null);
     setSelRoom(null);
+    setTab("rum");
+    setOpen(false);
   }, []);
+  const edit = () => {
+    setSelItem(null);
+    setOpen(true);
+  };
+  const restart = () => {
+    setCfg(START);
+    setBuilt(null);
+    setSelItem(null);
+    setSelRoom(null);
+    setOpen(true);
+  };
 
-  // Live updates: once something is built, every change rebuilds quickly.
   const update = (patch: Partial<Config>) => {
     const next = { ...cfg, ...patch };
     if (!AREAS[next.type].some((a) => a.id === next.area)) next.area = AREAS[next.type][0].id;
     next.extras = next.extras.filter((e) => extraAvailable(e, next.type));
     setCfg(next);
-    if (built) build(next, true);
   };
   const toggleExtra = (e: Extra) => update({ extras: cfg.extras.includes(e) ? cfg.extras.filter((x) => x !== e) : [...cfg.extras, e] });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
-      if (e.key === "Enter" && !(e.target instanceof HTMLButtonElement)) build(cfg, false);
+      if (e.key === "Enter" && open && !(e.target instanceof HTMLButtonElement)) build(cfg);
       if (e.key === "f" || e.key === "F") {
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen?.().catch(() => {});
@@ -101,7 +111,7 @@ export function Designer({ version }: { version: string }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cfg, build]);
+  }, [cfg, build, open]);
 
   // Keep the shopping list in sync with what's clicked in 3D.
   useEffect(() => {
@@ -120,6 +130,9 @@ export function Designer({ version }: { version: string }) {
     return [...g.entries()];
   }, [plan]);
 
+  const typeLabel = TYPES.find((t) => t.id === cfg.type)!.label;
+  const areaLabel = AREAS[cfg.type].find((a) => a.id === cfg.area)!.label;
+  const vibeLabel = VIBES.find((v) => v.id === cfg.vibe)!.label;
 
   return (
     <div className="app">
@@ -132,178 +145,103 @@ export function Designer({ version }: { version: string }) {
         <span className="ver" title="Version">v {version}</span>
       </header>
 
-      <aside className="panel">
-        <section>
-          <h2>
-            <i>1</i>Typ av boende
-          </h2>
-          <div className="types">
-            {TYPES.map((t) => (
-              <button key={t.id} className={`card${cfg.type === t.id ? " on" : ""}`} onClick={() => update({ type: t.id })}>
-                <TypeIcon t={t.id} />
-                <b>{t.label}</b>
-                <small>{t.hint}</small>
+      <div className="body">
+        <main className="stage">
+          {plan && (
+            <Scene
+              plan={plan}
+              buildId={buildId}
+              quick={false}
+              active={!open}
+              selectedItem={selItem}
+              selectedRoom={selRoom}
+              onSelectItem={(id) => {
+                setSelItem(id);
+                if (id) setSelRoom(null);
+              }}
+              onSelectRoom={setSelRoom}
+            />
+          )}
+          {plan && (
+            <div className="actions">
+              <button className="act" onClick={restart}>
+                <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
+                  <path d="M4 10a6 6 0 1 0 2-4.5M4 3.5V6h2.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Starta om
               </button>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2>
-            <i>2</i>Antal rum <em>{ROOM_WORD[cfg.rooms - 1]} · {m2(liveArea)}</em>
-          </h2>
-          <div className="seg">
-            {([1, 2, 3, 4, 5] as const).map((n) => (
-              <button key={n} className={cfg.rooms === n ? "on" : ""} onClick={() => update({ rooms: n })}>
-                <b>{n}</b>
-                <small>rok</small>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2>
-            <i>3</i>Stil
-          </h2>
-          <div className="vibes">
-            {VIBES.map((v) => (
-              <button key={v.id} className={`vibe${cfg.vibe === v.id ? " on" : ""}`} onClick={() => update({ vibe: v.id })}>
-                <span className="sw">
-                  {v.swatch.map((c) => (
-                    <i key={c} style={{ background: c }} />
-                  ))}
-                </span>
-                <b>{v.label}</b>
-                <small>{v.hint}</small>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2>
-            <i>4</i>Område
-          </h2>
-          <div className="chips">
-            {AREAS[cfg.type].map((a) => (
-              <button key={a.id} className={cfg.area === a.id ? "on" : ""} onClick={() => update({ area: a.id })}>
-                {a.label}
-                <small>{Math.round(a.perM2 / 1000)} tkr/m²</small>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2>
-            <i>5</i>Tillval
-          </h2>
-          <div className="extras">
-            {EXTRAS.map((e) => {
-              const label = e.byType[cfg.type];
-              const on = cfg.extras.includes(e.id);
-              return (
-                <button key={e.id} disabled={!label} className={on ? "on" : ""} onClick={() => toggleExtra(e.id)} title={label ? undefined : "Finns inte för lägenhet"}>
-                  <span className="tick">{on ? "✓" : "+"}</span>
-                  {label ?? e.label}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <button className="build" onClick={() => build(cfg, false)}>
-          {built ? "Bygg om från grunden" : "Bygg drömboendet"}
-          <kbd>Enter</kbd>
-        </button>
-        {built && <p className="live">Ändringar uppdateras direkt</p>}
-      </aside>
-
-      <main className="stage">
-        {plan ? (
-          <Scene
-            plan={plan}
-            buildId={buildId}
-            quick={quick}
-            selectedItem={selItem}
-            selectedRoom={selRoom}
-            onSelectItem={(id) => {
-              setSelItem(id);
-              if (id) setSelRoom(null);
-            }}
-            onSelectRoom={setSelRoom}
-          />
-        ) : (
-          <div className="empty">
-            <div className="grid" />
-            <div className="hello">
-              <span className="eyebrow">Revisionskonsulterna J Hägglund presenterar</span>
-              <h2>Hur skulle ditt drömboende se ut?</h2>
-              <p>Välj typ, antal rum och stil till vänster – tryck sedan på bygg. Klicka på möblerna för pris, mått och var de finns.</p>
-              <button className="build big" onClick={() => build(cfg, false)}>
-                Bygg drömboendet
+              <button className="act" onClick={edit}>
+                <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
+                  <path d="M3 17h3.5L16 7.5 12.5 4 3 13.5zM11 5.5 14.5 9" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                </svg>
+                Ändra
               </button>
             </div>
-          </div>
-        )}
-        {plan && <div className="hint">Dra för att snurra · scrolla för att zooma · klicka på en möbel</div>}
-      </main>
+          )}
+          {plan && <div className="hint">Dra för att snurra · scrolla för att zooma · klicka på en möbel</div>}
+        </main>
 
-      <aside className="result">
-        {plan && est ? (
-          <>
-            <div className="head">
-              <small>{TYPES.find((t) => t.id === plan.config.type)!.label} · {VIBES.find((v) => v.id === plan.config.vibe)!.label}</small>
-              <h2>{plan.title}</h2>
-            </div>
-            <div className="price">
-              <small>Uppskattat pris</small>
-              <strong>{short(est.price)}</strong>
-              <div className="facts">
-                <span>
-                  <b>{m2(plan.livingArea)}</b>boarea
-                </span>
-                <span>
-                  <b>{plan.config.rooms} rok</b>
-                  {ROOM_WORD[plan.config.rooms - 1].toLowerCase()}
-                </span>
-                <span>
-                  <b>{Math.round(est.perM2 / 1000)} tkr</b>per m²
-                </span>
+        <aside className="result">
+          {plan && est && (
+            <>
+              <div className="head">
+                <small>
+                  {TYPES.find((t) => t.id === plan.config.type)!.label} · {VIBES.find((v) => v.id === plan.config.vibe)!.label}
+                </small>
+                <h2>{plan.title}</h2>
               </div>
-              {est.extras > 0 && <p className="dim">Varav tillval ca {short(est.extras)}</p>}
-            </div>
+              <div className="price">
+                <small>Uppskattat pris</small>
+                <strong>{short(est.price)}</strong>
+                <div className="facts">
+                  <span>
+                    <b>{m2(plan.livingArea)}</b>boarea
+                  </span>
+                  <span>
+                    <b>{plan.config.rooms} rok</b>
+                    {ROOM_WORD[plan.config.rooms - 1].toLowerCase()}
+                  </span>
+                  <span>
+                    <b>{Math.round(est.perM2 / 1000)} tkr</b>per m²
+                  </span>
+                </div>
+                {est.extras > 0 && <p className="dim">Varav tillval ca {short(est.extras)}</p>}
+              </div>
 
-            <div className="tabs">
-              <button className={tab === "rum" ? "on" : ""} onClick={() => setTab("rum")}>
-                Rum <span>{plan.rooms.filter((r) => r.kind !== "hall").length}</span>
-              </button>
-              <button className={tab === "inredning" ? "on" : ""} onClick={() => setTab("inredning")}>
-                Inredning <span>{plan.items.length}</span>
-              </button>
-            </div>
+              <div className="tabs">
+                <button className={tab === "rum" ? "on" : ""} onClick={() => setTab("rum")}>
+                  Rum <span>{plan.rooms.filter((r) => r.kind !== "hall").length}</span>
+                </button>
+                <button className={tab === "inredning" ? "on" : ""} onClick={() => setTab("inredning")}>
+                  Inredning <span>{plan.items.length}</span>
+                </button>
+              </div>
 
-            <div className="list" ref={listRef}>
-              {tab === "rum" ? (
-                <ul className="rooms">
-                  {plan.rooms
-                    .filter((r) => r.kind !== "hall")
-                    .map((r) => (
-                      <li key={r.id}>
-                        <button className={selRoom === r.id ? "on" : ""} onClick={() => { setSelItem(null); setSelRoom(selRoom === r.id ? null : r.id); }}>
-                          <span>{r.name}</span>
-                          <em>
-                            {r.w.toFixed(1).replace(".", ",")} × {r.d.toFixed(1).replace(".", ",")} m
-                          </em>
-                          <b>{m2(r.w * r.d)}</b>
-                        </button>
-                      </li>
-                    ))}
-                </ul>
-              ) : (
-                <>
-                  {groups.map(([room, items]) => (
+              <div className="list" ref={listRef}>
+                {tab === "rum" ? (
+                  <ul className="rooms">
+                    {plan.rooms
+                      .filter((r) => r.kind !== "hall")
+                      .map((r) => (
+                        <li key={r.id}>
+                          <button
+                            className={selRoom === r.id ? "on" : ""}
+                            onClick={() => {
+                              setSelItem(null);
+                              setSelRoom(selRoom === r.id ? null : r.id);
+                            }}
+                          >
+                            <span>{r.name}</span>
+                            <em>
+                              {r.w.toFixed(1).replace(".", ",")} × {r.d.toFixed(1).replace(".", ",")} m
+                            </em>
+                            <b>{m2(r.w * r.d)}</b>
+                          </button>
+                        </li>
+                      ))}
+                  </ul>
+                ) : (
+                  groups.map(([room, items]) => (
                     <div key={room} className="grp">
                       <h3>{room}</h3>
                       <ul>
@@ -323,28 +261,127 @@ export function Designer({ version }: { version: string }) {
                         ))}
                       </ul>
                     </div>
-                  ))}
-                </>
+                  ))
+                )}
+              </div>
+              <div className="total">
+                <span>Inredning totalt</span>
+                <strong>ca {kr(est.furniture)}</strong>
+              </div>
+              <p className="fine">Cirkapriser och uppskattningar, inte rådgivning eller offert.</p>
+            </>
+          )}
+        </aside>
+
+        <section className={`chooser${open ? " open" : ""}`} aria-hidden={!open}>
+          <div className="inner">
+            <div className="intro">
+              <span className="eyebrow">Revisionskonsulterna J Hägglund presenterar</span>
+              <h2>Hur skulle ditt drömboende se ut?</h2>
+            </div>
+
+            <div className="blk b-type">
+              <h3>
+                <i>1</i>Typ av boende
+              </h3>
+              <div className="types">
+                {TYPES.map((t) => (
+                  <button key={t.id} className={`card${cfg.type === t.id ? " on" : ""}`} onClick={() => update({ type: t.id })}>
+                    <TypeIcon t={t.id} />
+                    <b>{t.label}</b>
+                    <small>{t.hint}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="blk b-rooms">
+              <h3>
+                <i>2</i>Antal rum <em>{m2(draftArea)}</em>
+              </h3>
+              <div className="seg">
+                {([1, 2, 3, 4, 5] as const).map((n) => (
+                  <button key={n} className={cfg.rooms === n ? "on" : ""} onClick={() => update({ rooms: n })}>
+                    <b>{n}</b>
+                    <small>rok</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="blk b-vibe">
+              <h3>
+                <i>3</i>Stil
+              </h3>
+              <div className="vibes">
+                {VIBES.map((v) => (
+                  <button key={v.id} className={`vibe${cfg.vibe === v.id ? " on" : ""}`} onClick={() => update({ vibe: v.id })}>
+                    <span className="sw">
+                      {v.swatch.map((c) => (
+                        <i key={c} style={{ background: c }} />
+                      ))}
+                    </span>
+                    <b>{v.label}</b>
+                    <small>{v.hint}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="blk b-area">
+              <h3>
+                <i>4</i>Område
+              </h3>
+              <div className="chips">
+                {AREAS[cfg.type].map((a) => (
+                  <button key={a.id} className={cfg.area === a.id ? "on" : ""} onClick={() => update({ area: a.id })}>
+                    {a.label}
+                    <small>{Math.round(a.perM2 / 1000)} tkr/m²</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="blk b-extras">
+              <h3>
+                <i>5</i>Tillval
+              </h3>
+              <div className="extras">
+                {EXTRAS.map((e) => {
+                  const label = e.byType[cfg.type];
+                  const on = cfg.extras.includes(e.id);
+                  return (
+                    <button key={e.id} disabled={!label} className={on ? "on" : ""} onClick={() => toggleExtra(e.id)} title={label ? undefined : "Finns inte för lägenhet"}>
+                      <span className="tick">{on ? "✓" : "+"}</span>
+                      {label ?? e.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="go">
+              <p className="summary">
+                <b>
+                  {ROOM_WORD[cfg.rooms - 1]} · {typeLabel}
+                </b>
+                <span>
+                  {vibeLabel} · {areaLabel} · {m2(draftArea)}
+                </span>
+              </p>
+              {built && (
+                <button className="ghostbtn" onClick={() => setOpen(false)}>
+                  Tillbaka till huset
+                </button>
               )}
+              <button className="build" onClick={() => build(cfg)}>
+                Bygg drömboendet
+                <kbd>Enter</kbd>
+              </button>
             </div>
-            <div className="total">
-              <span>Inredning totalt</span>
-              <strong>ca {kr(est.furniture)}</strong>
-            </div>
-            <p className="fine">Cirkapriser och uppskattningar, inte rådgivning eller offert.</p>
-          </>
-        ) : (
-          <div className="placeholder">
-            <h2>Resultat</h2>
-            <p>Här ser du uppskattat pris, rummens storlek och en inköpslista för stilen.</p>
-            <ul>
-              <li>Pris och kr/m² för området</li>
-              <li>Varje rum med mått</li>
-              <li>Möbler med cirkapris och butik</li>
-            </ul>
           </div>
-        )}
-      </aside>
+        </section>
+      </div>
     </div>
   );
 }

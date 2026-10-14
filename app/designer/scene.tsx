@@ -162,6 +162,7 @@ export function Scene({
   plan,
   buildId,
   quick,
+  active = true,
   selectedItem,
   selectedRoom,
   onSelectItem,
@@ -170,6 +171,7 @@ export function Scene({
   plan: Plan;
   buildId: number;
   quick: boolean;
+  active?: boolean;
   selectedItem: string | null;
   selectedRoom: string | null;
   onSelectItem: (id: string | null) => void;
@@ -188,6 +190,8 @@ export function Scene({
   const [spin, setSpin] = useState(true);
   const spinRef = useRef(true);
   spinRef.current = spin;
+  const activeRef = useRef(active);
+  activeRef.current = active;
   const [pop, setPop] = useState<{ item: Item; x: number; y: number } | null>(null);
 
   const cx = plan.bounds.x + plan.bounds.w / 2;
@@ -200,7 +204,7 @@ export function Scene({
     const ro = new ResizeObserver(() => {
       const { width, height } = el.getBoundingClientRect();
       const bw = plan.bounds.w * M, bd = plan.bounds.d * M;
-      fit.current = Math.min((width * 0.97) / Math.hypot(bw, bd * 0.7), (height * 0.9) / (Math.hypot(bw, bd) * 0.58 + WALL_H * M));
+      fit.current = Math.min((width * 0.9) / Math.hypot(bw, bd), (height * 0.88) / (Math.hypot(bw, bd) * 0.58 + WALL_H * M));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -235,6 +239,10 @@ export function Scene({
     const tick = (now: number) => {
       const dt = Math.min(50, now - last);
       last = now;
+      if (!activeRef.current) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const c = cam.current, t = target.current;
       if (spinRef.current && !flat.current && now > idleUntil.current) t.rz += dt * 0.0085;
       const k = 1 - Math.exp(-dt / 140);
