@@ -22,7 +22,8 @@ Set `APP_PASSCODE` (and optionally `SESSION_SECRET`) in Vercel to put the app be
 
 | Path | What |
 | --- | --- |
-| `lib/home/catalog.ts` | Types, styles, areas (kr/m²), extras, palettes, furniture catalogue (names, sizes, approximate prices, stores) |
+| `lib/home/places.ts` | All 290 kommuner with rough price levels, search and kr/m² per home type |
+| `lib/home/catalog.ts` | Types, styles, extras, palettes, furniture catalogue (names, sizes, approximate prices, stores) |
 | `lib/home/layout.ts` | `generate(config)`: room programme → floor plan, walls with doors/windows, plot, garden, pool, lake |
 | `lib/home/furnish.ts` | Furniture placement per room and style |
 | `lib/home/price.ts` | Price estimate |

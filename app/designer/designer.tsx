@@ -1,14 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AREAS, EXTRAS, TYPES, VIBES, extraAvailable } from "@/lib/home/catalog";
+import { EXTRAS, TYPES, VIBES, extraAvailable } from "@/lib/home/catalog";
+import { placeById } from "@/lib/home/places";
 import { generate } from "@/lib/home/layout";
 import { estimate, kr } from "@/lib/home/price";
 import type { Config, Extra, HomeType, Item } from "@/lib/home/types";
+import { PlaceSearch } from "./place-search";
 import { Scene } from "./scene";
 
 const ROOM_WORD = ["Etta", "Tvåa", "Trea", "Fyra", "Femma"];
-const START: Config = { type: "lagenhet", rooms: 2, vibe: "ungdom", area: "sodermalm", extras: ["balkong"] };
+const START: Config = { type: "lagenhet", rooms: 2, vibe: "ungdom", area: "stockholm", extras: ["balkong"] };
 
 const m2 = (v: number) => `${v.toFixed(1).replace(".", ",").replace(",0", "")} m²`;
 const short = (v: number) => (v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1).replace(".", ",")} mkr` : kr(v));
@@ -93,7 +95,6 @@ export function Designer({ version }: { version: string }) {
 
   const update = (patch: Partial<Config>) => {
     const next = { ...cfg, ...patch };
-    if (!AREAS[next.type].some((a) => a.id === next.area)) next.area = AREAS[next.type][0].id;
     next.extras = next.extras.filter((e) => extraAvailable(e, next.type));
     setCfg(next);
   };
@@ -131,7 +132,7 @@ export function Designer({ version }: { version: string }) {
   }, [plan]);
 
   const typeLabel = TYPES.find((t) => t.id === cfg.type)!.label;
-  const areaLabel = AREAS[cfg.type].find((a) => a.id === cfg.area)!.label;
+  const areaLabel = placeById(cfg.area).name;
   const vibeLabel = VIBES.find((v) => v.id === cfg.vibe)!.label;
 
   return (
@@ -332,14 +333,7 @@ export function Designer({ version }: { version: string }) {
               <h3>
                 <i>4</i>Område
               </h3>
-              <div className="chips">
-                {AREAS[cfg.type].map((a) => (
-                  <button key={a.id} className={cfg.area === a.id ? "on" : ""} onClick={() => update({ area: a.id })}>
-                    {a.label}
-                    <small>{Math.round(a.perM2 / 1000)} tkr/m²</small>
-                  </button>
-                ))}
-              </div>
+              <PlaceSearch type={cfg.type} value={cfg.area} onChange={(area) => update({ area })} />
             </div>
 
             <div className="blk b-extras">

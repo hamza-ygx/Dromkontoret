@@ -23,42 +23,6 @@ export const EXTRAS: { id: Extra; label: string; byType: Partial<Record<HomeType
 
 export const extraAvailable = (extra: Extra, type: HomeType) => EXTRAS.find((e) => e.id === extra)!.byType[type] !== undefined;
 
-/** kr per m² living area, rough 2026 levels. */
-export const AREAS: Record<HomeType, { id: string; label: string; perM2: number }[]> = {
-  lagenhet: [
-    { id: "vasastan", label: "Vasastan", perM2: 105_000 },
-    { id: "sodermalm", label: "Södermalm", perM2: 100_000 },
-    { id: "kungsholmen", label: "Kungsholmen", perM2: 98_000 },
-    { id: "hammarby", label: "Hammarby Sjöstad", perM2: 82_000 },
-    { id: "goteborg", label: "Göteborg", perM2: 62_000 },
-    { id: "uppsala", label: "Uppsala", perM2: 48_000 },
-  ],
-  radhus: [
-    { id: "bromma", label: "Bromma", perM2: 62_000 },
-    { id: "nacka", label: "Nacka", perM2: 55_000 },
-    { id: "taby", label: "Täby", perM2: 52_000 },
-    { id: "askim", label: "Askim, Göteborg", perM2: 45_000 },
-    { id: "uppsala", label: "Uppsala", perM2: 40_000 },
-    { id: "vasteras", label: "Västerås", perM2: 34_000 },
-  ],
-  villa: [
-    { id: "djursholm", label: "Djursholm", perM2: 95_000 },
-    { id: "bromma", label: "Bromma", perM2: 70_000 },
-    { id: "nacka", label: "Nacka", perM2: 60_000 },
-    { id: "taby", label: "Täby", perM2: 58_000 },
-    { id: "uppsala", label: "Uppsala", perM2: 42_000 },
-    { id: "vasteras", label: "Västerås", perM2: 33_000 },
-  ],
-  stuga: [
-    { id: "vardo", label: "Värmdö", perM2: 55_000 },
-    { id: "are", label: "Åre", perM2: 60_000 },
-    { id: "vastkusten", label: "Västkusten", perM2: 50_000 },
-    { id: "osterlen", label: "Österlen", perM2: 40_000 },
-    { id: "gotland", label: "Gotland", perM2: 38_000 },
-    { id: "dalarna", label: "Dalarna", perM2: 22_000 },
-  ],
-};
-
 export const EXTRA_PRICE: Record<Extra, Partial<Record<HomeType, number>>> = {
   balkong: { lagenhet: 180_000, radhus: 90_000, villa: 120_000, stuga: 60_000 },
   pool: { lagenhet: 250_000, radhus: 350_000, villa: 450_000, stuga: 70_000 },

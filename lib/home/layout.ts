@@ -1,4 +1,5 @@
-import { AREAS, PALETTE, SIZE, TYPES, VIBES } from "./catalog";
+import { PALETTE, SIZE, TYPES, VIBES } from "./catalog";
+import { placeById, preposition } from "./places";
 import { furnish, outdoorItem } from "./furnish";
 import type { Box, Config, Item, Opening, Plan, Rect, Room, RoomKind, WallRun } from "./types";
 
@@ -334,9 +335,9 @@ export function generate(cfg: Config): Plan {
   const items = [...inside, ...outdoor];
   const livingArea = Math.round(rooms.reduce((a, r) => a + r.w * r.d, 0));
   const typeLabel = TYPES.find((t) => t.id === cfg.type)!.label;
-  const areaLabel = AREAS[cfg.type].find((a) => a.id === cfg.area)?.label ?? "";
+  const place = placeById(cfg.area);
   const roomWord = ["Etta", "Tvåa", "Trea", "Fyra", "Femma"][cfg.rooms - 1];
-  const title = cfg.type === "lagenhet" ? `${roomWord} på ${areaLabel}` : `${typeLabel} i ${areaLabel}`;
+  const title = `${cfg.type === "lagenhet" ? roomWord : typeLabel} ${preposition(place)} ${place.name}`;
   const bounds: Rect = { x: minX, y: minY, w: maxX - minX, d: maxY - minY };
   return { config: cfg, width: W, depth: D, rooms, walls, site, items, bounds, livingArea, title };
 }
