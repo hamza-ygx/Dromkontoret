@@ -301,12 +301,12 @@ export function generate(cfg: Config): Plan {
     }
     if (cfg.type === "radhus") {
       // Neighbours on both sides.
-      for (const nx of [-7, W]) {
-        add({ x: nx + 0.1, y: 0, z: 0, w: 6.8, d: D, h: 5.4, color: "#e7e2da", className: "ghost" });
+      for (const nx of [-3.6, W]) {
+        add({ x: nx + 0.1, y: 0, z: 0, w: 3.4, d: D, h: 3.1, color: "#e7e2da", className: "ghost" });
         add({ x: nx < 0 ? left : right - 0.08, y: gardenTop + 0.3, z: 0, w: 0.08, d: -gardenTop - 0.3, h: 1.2, color: "#a88b6a" });
       }
-      minX = -7;
-      maxX = W + 7;
+      minX = -3.6;
+      maxX = W + 3.6;
     }
     if (cfg.type === "stuga") {
       const lakeY = gardenTop - lakeD;

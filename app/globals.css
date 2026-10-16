@@ -362,7 +362,7 @@ h1, h2, h3 { margin: 0; }
 }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 
-.ghost .f { opacity: 0.5; }
+.ghost .f { opacity: 0.32; }
 .water .f.top { background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.35), transparent 45%, rgba(255, 255, 255, 0.18)) !important; }
 .screen .f { background: #10151d !important; }
 .it.sel .f { outline: 2px solid var(--gold); outline-offset: -1px; }
