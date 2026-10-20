@@ -21,19 +21,19 @@ Second app next to Drömboendet for RKJH's client event on 15 November 2026. Bra
   - `rates.ts` every adjustable figure (space now; rents, salaries, taxes in phase 4) – sources in `RATES.md`
   - `programs.ts` room programme per industry (which rooms, how big, which row); desk and table grids
   - `layout.ts` `generateOffice(config)`: balances rooms over two rows + corridor, walls with doors, shop windows and a glass entrance on the street side, pavement, trees, parking with chargers
-  - `furnish.ts` places items per room kind; `parts.ts` the box builders
+  - `furnish.ts` places items per room kind (shop, stores, workshop hall in `furnish-trade.ts`); `parts.ts` / `parts-trade.ts` the box builders
+  - `site.ts` lot, pavement, trees, builder's yard (fence, container, timber rack, vans), parking with chargers
 - `app/office/`: `office-designer.tsx` (state, top bar, stage), `chooser.tsx`, `result.tsx` (result panel), `icons.tsx`.
 - Shared with Drömboendet: `Mark`, `StageActions`, `RoomList`/`ItemList` (`app/designer/lists.tsx`), `PlaceSearch` (optional `format`), `places.ts`, `Scene` (now takes any `Model3D` plus a wall `palette`), and the `place()` helper and generic builders exported from `lib/home/furnish.ts`.
-- Not yet built: Bygg, Butik and Verkstad currently fall back to the Konsult layout (phase 3).
 
 ## Phases
 
 | # | Scope | Status |
 | --- | --- | --- |
 | 1 | Plan, route `/kontor`, top-bar toggle, office chooser (clicks only) | Done, pushed |
-| 2 | Office generator + 3D for Konsult and Restaurang | Done, awaiting OK |
-| 3 | All five industries + catalogue with Swedish suppliers per style | Next |
-| 4 | Result panel + cost model (rent, salaries, arbetsgivaravgift, break-even) + RATES.md | |
+| 2 | Office generator + 3D for Konsult and Restaurang | Done, pushed |
+| 3 | All five industries + catalogue with Swedish suppliers per style | Done, awaiting OK |
+| 4 | Result panel + cost model (rent, salaries, arbetsgivaravgift, break-even) + RATES.md | Next |
 | 5 | "Vart tar pengarna vägen?" money machine | |
 | 6 | Polish, 1440 / 1280×720 / phone, performance check | |
 
@@ -45,10 +45,18 @@ Second app next to Drömboendet for RKJH's client event on 15 November 2026. Bra
 - Build to explorable in about 4.5–5.3 s. Every visible piece is clickable (name, size, cirkapris, store).
 - Spin check (headless, software rendering): style recalc is one cheap recalc per frame from the root transform, same as Drömboendet. The 35-person scenes have about 3 700 DOM nodes against 2 100 for a 5-room villa; verify frame rate on the event machine in phase 6.
 
-## Plan for phase 3
+## Phase 3 results (Bygg, Butik, Verkstad)
 
-- Bygg: office part + material storage + yard with van and racks (site boxes). Butik: shop floor with shelves and checkout, stockroom. Verkstad: workshop hall with lifts and workbenches (taller walls via an optional wall height), office, staff room.
-- Catalogue rows for those industries (Würth, Clas Ohlson, etc.).
+- Bygg: street-side office (20 % of staff at desks), "Snickeri" with a street port, "Lager & verktyg" with a port to a fenced yard holding timber rack, container and 1–8 vans (clickable, priced). The result total is labelled "Inredning, utrustning och bilar".
+- Butik: shop floor sized 40 × staff^0.8 m² with gondolas (priced per section), wall shelving, checkouts (1 per 8 staff), stockroom with a delivery port, office from 6 staff.
+- Verkstad: customer reception, workshop hall with one port and lift per bay (0.5 lifts per employee; two rows above 8 lifts), customer cars (scenery, not priced), workbenches, compressor, tyre machine, diagnostic carts, parts store.
+- Middle fact in the result panel is per industry: arbetsplatser, sittplatser, servicebilar, m² butiksyta, billyftar.
+- Walls stay 2.6 m everywhere (Scene untouched); ports are wide openings.
+- All 600 option combinations generate with every room furnished, unique ids and labelled items (checked with a script).
+
+## Phase 4 decisions already made
+
+- Personalkostnad = salary × 12 × 1.42 (arbetsgivaravgift 31.42 % + tjänstepension and semestertillägg), shown as separate lines (confirmed by Hamza).
 
 ## Risks
 

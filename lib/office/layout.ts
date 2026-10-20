@@ -1,19 +1,18 @@
 import { placeById, preposition } from "../home/places";
-import type { Box, Item, Opening, Room, WallRun } from "../home/types";
+import type { Opening, Room, WallRun } from "../home/types";
 import { INDUSTRIES, staffFor } from "./catalog";
-import { furnishOffice, siteItem } from "./furnish";
+import { furnishOffice } from "./furnish";
 import { OFFICE_PALETTE } from "./palette";
-import { car, charger } from "./parts";
 import { MIN_W, program, type Spec } from "./programs";
+import { buildSite } from "./site";
 import type { OfficeConfig, OfficePlan, OfficeRoomKind } from "./types";
 
 const CORRIDOR = 1.6;
 const r1 = (v: number) => Math.round(v * 10) / 10;
-const DARK: OfficeRoomKind[] = ["wc", "forrad", "kyl", "disk"];
-const SHOWCASE: OfficeRoomKind[] = ["matsal", "reception", "bar", "chambre"];
-const WIDE: OfficeRoomKind[] = ["kontor", "matsal", "reception", "lounge", "storkok"];
-const TILE: OfficeRoomKind[] = ["wc", "gym", "storkok", "disk", "kyl", "pentry"];
-const ORDER: OfficeRoomKind[] = ["kontor", "storkok", "disk", "kyl", "pentry", "lounge", "personal", "gym", "matsal", "bar", "reception", "mote", "konferens", "chambre", "forrad", "wc"];
+const DARK: OfficeRoomKind[] = ["wc", "forrad", "kyl", "disk", "lager", "verkstad"];
+const SHOWCASE: OfficeRoomKind[] = ["matsal", "reception", "bar", "chambre", "butik"];
+const WIDE: OfficeRoomKind[] = ["kontor", "matsal", "reception", "lounge", "storkok", "butik", "lager", "verkstad"];
+const ORDER: OfficeRoomKind[] = ["lager", "kontor", "storkok", "disk", "kyl", "pentry", "lounge", "personal", "gym", "reception", "matsal", "bar", "butik", "verkstad", "mote", "konferens", "chambre", "forrad", "wc"];
 
 const width = (s: Spec, depth: number) => Math.max(s.min ?? MIN_W[s.kind], s.area / depth);
 const sum = (l: Spec[], d: number) => l.reduce((a, s) => a + width(s, d), 0);
@@ -91,9 +90,17 @@ export function generateOffice(cfg: OfficeConfig): OfficePlan {
   const specOf = (r: Room<OfficeRoomKind>) => [...top, ...bottom].find((s) => s.name === r.name)!;
 
   const walls: WallRun[] = [];
-  const north = topRooms.flatMap((r) => (DARK.includes(r.kind) ? [] : windows(r.x, r.x + r.w, 1.8)));
+  const ports = (r: Room<OfficeRoomKind>): Opening[] => {
+    const n = specOf(r).ports ?? 0;
+    return Array.from({ length: n }, (_, i) => {
+      const m = r.x + ((i + 0.5) * r.w) / n;
+      return { a: m - 1.5, b: m + 1.5, kind: "opening" };
+    });
+  };
+  const north = topRooms.flatMap((r) => (specOf(r).ports ? ports(r) : DARK.includes(r.kind) ? [] : windows(r.x, r.x + r.w, 1.8)));
   walls.push({ id: "n", axis: "h", at: 0, from: 0, to: W, exterior: true, side: "n", openings: north });
   const south = botRooms.flatMap((r): Opening[] => {
+    if (specOf(r).ports) return ports(r);
     if (DARK.includes(r.kind)) return [];
     const big = SHOWCASE.includes(r.kind) ? 2.4 : 1.6;
     if (!specOf(r).entry) return windows(r.x, r.x + r.w, big);
@@ -114,36 +121,18 @@ export function generateOffice(cfg: OfficeConfig): OfficePlan {
   partitions(topRooms, 0, T, "vt");
   partitions(botRooms, T + CORRIDOR, D, "vb");
 
-  const site: Box[] = [];
-  const extra: Item[] = [];
-  const parking = cfg.addons.includes("parkering");
-  const px = W + 1.4;
-  const maxX = parking ? px + 5.8 : W + 1.6;
-  site.push({ x: -1.6, y: -1.6, z: -0.06, w: maxX + 1.6, d: D + 4.4, h: 0.02, flat: true, color: "#d6d3cc", className: "floor" });
-  site.push({ x: -1.6, y: D + 0.2, z: -0.04, w: maxX + 1.6, d: 2.6, h: 0.02, flat: true, color: "#e7e4dd", className: "floor" });
-  site.push({ x: -0.15, y: -0.15, z: -0.25, w: W + 0.3, d: D + 0.3, h: 0.25, color: "#b9b4ab" });
-  rooms.forEach((r) => {
-    const color = TILE.includes(r.kind) ? pal.tile : r.kind === "forrad" || r.kind === "kyl" ? pal.concrete : cfg.style === "kreativt" && r.kind !== "hall" ? pal.concrete : pal.floor;
-    site.push({ x: r.x, y: r.y, z: 0, w: r.w, d: r.d, h: 0.02, flat: true, color, className: "floor" });
-  });
-  const trees = Math.max(2, Math.floor(W / 8));
-  for (let i = 0; i < trees; i++) {
-    const tx = ((i + 0.5) * W) / trees, ty = D + 1.9, s = 1.5;
-    site.push({ x: tx - 0.1, y: ty - 0.1, z: 0, w: 0.2, d: 0.2, h: 1.3, color: "#7a5a3a" });
-    site.push({ x: tx - s / 2, y: ty - s / 2, z: 1.0, w: s, d: s, h: s * 0.8, round: true, color: pal.plant, className: "crown" });
-  }
-  if (parking) {
-    const stalls = Math.max(3, Math.min(Math.floor((D + 1.2) / 2.5), Math.ceil(staff / 4) + 1));
-    site.push({ x: px - 0.2, y: -0.4, z: -0.03, w: 5.6, d: stalls * 2.5 + 0.4, h: 0.02, flat: true, color: "#8e9196", className: "floor" });
-    for (let i = 0; i <= stalls; i++) site.push({ x: px, y: -0.2 + i * 2.5, z: -0.01, w: 5, d: 0.08, h: 0.01, flat: true, color: "#f4f4f2", className: "floor" });
-    [0, 1].forEach((i) => extra.push(siteItem(cfg, "charger", "Parkering", px + 5.0, i * 2.5 + 1.0, 0.3, 0.22, charger(pal))));
-    [[0, pal.accent2], [2, "#c9ccd1"]].forEach(([i, c]) => {
-      const k = i as number;
-      car(c as string).forEach(([x, v, z, w, d, h, color]) => site.push({ x: px + 0.6 + v, y: k * 2.5 + 0.3 + x, z, w: d, d: w, h, color }));
-    });
-  }
-
-  const { items, seats } = furnishOffice(cfg, rooms, pal, staff, prog.seats);
+  const { site, items: extra, bounds } = buildSite(cfg, pal, rooms, W, D, staff, prog.vans);
+  const { items, seats, decor } = furnishOffice(cfg, rooms, pal, staff, prog.seats, prog.lifts);
+  site.push(...decor);
+  const count = (n: number, one: string, many: string) => ({ value: String(n), label: n === 1 ? one : many });
+  const shop = rooms.find((r) => r.kind === "butik");
+  const metric = {
+    konsult: () => count(items.filter((i) => i.label.name.startsWith("Arbetsplats")).length, "arbetsplats", "arbetsplatser"),
+    restaurang: () => count(seats, "sittplats", "sittplatser"),
+    bygg: () => count(prog.vans, "servicebil", "servicebilar"),
+    butik: () => ({ value: `${Math.round(shop ? shop.w * shop.d : 0)} m²`, label: "butiksyta" }),
+    verkstad: () => count(prog.lifts, "billyft", "billyftar"),
+  }[cfg.industry]();
   const place = placeById(cfg.area);
   const company = cfg.industry === "restaurang" && seats <= 30 ? "Café" : INDUSTRIES.find((i) => i.id === cfg.industry)!.company;
   return {
@@ -155,9 +144,10 @@ export function generateOffice(cfg: OfficeConfig): OfficePlan {
     walls,
     site,
     items: [...items, ...extra],
-    bounds: { x: -1.6, y: -1.6, w: maxX + 1.6, d: D + 4.4 },
+    bounds,
     floorArea: Math.round(W * D),
     seats,
+    metric,
     title: `${company} ${preposition(place)} ${place.name}`,
   };
 }

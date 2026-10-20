@@ -3,13 +3,22 @@ import type { Box, CatalogEntry, Item, Room } from "../home/types";
 import { EQUIP, TABLEWARE_PER_SEAT, type EquipKind } from "./equipment";
 import type { OfficePalette } from "./palette";
 import * as P from "./parts";
-import { AISLE, TABLE_CELL, barStools, deskGrid, tableGrid, wcCount } from "./programs";
+import { I, raise, shift } from "./parts";
+import { furnishTrade } from "./furnish-trade";
+import { AISLE, TABLE_CELL, barStools, deskCount, deskGrid, tableGrid, wcCount } from "./programs";
 import type { OfficeConfig, OfficeRoomKind } from "./types";
 
-type R = Room<OfficeRoomKind>;
-const I = 0.14;
-const lift = (parts: Part[], z: number): Part[] => parts.map(([x, v, zz, w, d, h, c, o]) => [x, v, zz + z, w, d, h, c, o]);
-const shift = (parts: Part[], dx: number): Part[] => parts.map(([x, v, z, w, d, h, c, o]) => [x + dx, v, z, w, d, h, c, o]);
+export type R = Room<OfficeRoomKind>;
+
+export interface Ctx {
+  cfg: OfficeConfig;
+  p: OfficePalette;
+  staff: number;
+  lifts: number;
+  add: (kind: EquipKind, r: R, u: number, v: number, w: number, d: number, parts: Part[], front?: boolean, label?: Partial<CatalogEntry>) => boolean;
+  greenery: (r: R, u: number, v: number, front?: boolean) => boolean;
+  decor: (r: R, u: number, v: number, parts: Part[], front?: boolean) => void;
+}
 
 let seq = 0;
 
@@ -18,10 +27,11 @@ export function siteItem(cfg: OfficeConfig, kind: EquipKind, room: string, x: nu
   return { id: `s${kind}${seq++}`, room, label: EQUIP[kind][cfg.style], boxes, x, y, w, d };
 }
 
-export function furnishOffice(cfg: OfficeConfig, rooms: R[], p: OfficePalette, staff: number, seatTarget: number) {
+export function furnishOffice(cfg: OfficeConfig, rooms: R[], p: OfficePalette, staff: number, seatTarget: number, lifts: number) {
   seq = 0;
   const s = cfg.style;
   const items: Item[] = [];
+  const decorBoxes: Box[] = [];
   let seats = 0;
   const add = (kind: EquipKind, r: R, u: number, v: number, w: number, d: number, parts: Part[], front = false, label?: Partial<CatalogEntry>) => {
     if (u < 0.1 || u + w > r.w - 0.1 + 1e-6 || v < 0 || v + d > r.d + 1e-6) return false;
@@ -37,36 +47,41 @@ export function furnishOffice(cfg: OfficeConfig, rooms: R[], p: OfficePalette, s
       price: seatTarget * TABLEWARE_PER_SEAT,
     });
   const greenery = (r: R, u: number, v: number, front = false) => add("plant", r, u, v, 0.5, 0.5, plant(p), front);
+  const decor = (r: R, u: number, v: number, parts: Part[], front = false) => decorBoxes.push(...place(r, u, v, 0, 0, parts, front).boxes);
+  const ctx: Ctx = { cfg, p, staff, lifts, add, greenery, decor };
+  const desks = deskCount(cfg, staff);
 
   for (const r of rooms) {
     const { w: W, d: D } = r;
     switch (r.kind) {
       case "kontor": {
-        const g = deskGrid(staff, D);
-        const spread = Math.min(1.5, Math.max(0, (W - 3.2 - g.width) / Math.max(1, g.cols)));
+        const g = deskGrid(desks, D);
+        const u0 = r.row === "bottom" ? 2.8 : 0.6;
+        const spread = Math.min(1.5, Math.max(0, (W - u0 - 2.6 - g.width) / Math.max(1, g.cols)));
         let n = 0;
-        for (let c = 0; c < g.cols && n < staff; c++) {
-          const u = 0.6 + c * (1.6 + spread) + Math.floor(c / 4) * 1.0;
+        for (let c = 0; c < g.cols && n < desks; c++) {
+          const u = u0 + c * (1.6 + spread) + Math.floor(c / 4) * 1.0;
           if (!g.doubles) {
             if (add("desk", r, u, 0.4, 1.5, P.WORKSTATION_D, P.workstation(p, s, -1))) n++;
             continue;
           }
-          for (let k = 0; k < g.doubles && n < staff; k++) {
+          for (let k = 0; k < g.doubles && n < desks; k++) {
             const v = 0.4 + k * (P.WORKSTATION_D * 2 + 1.1);
             if (add("desk", r, u, v, 1.5, P.WORKSTATION_D, P.workstation(p, s, 1))) n++;
-            if (n < staff && add("desk", r, u, v + P.WORKSTATION_D, 1.5, P.WORKSTATION_D, P.workstation(p, s, -1))) n++;
+            if (n < desks && add("desk", r, u, v + P.WORKSTATION_D, 1.5, P.WORKSTATION_D, P.workstation(p, s, -1))) n++;
           }
         }
-        const end = g.width + g.cols * spread - 0.2;
+        const end = u0 - 0.6 + g.width + g.cols * spread - 0.2;
         greenery(r, W - 0.7, I + 0.1);
         if (W - end > 2.2) add("storage", r, W - 2.0, I, 1.8, 0.45, P.tallUnit(p.cabinet, 1.8, 0.45, 1.2), true);
-        if (staff >= 18) greenery(r, Math.max(end, W - 2.6), I + 0.1);
+        if (desks >= 18) greenery(r, Math.max(end, W - 2.6), I + 0.1);
         break;
       }
       case "reception": {
         const cw = 2.0;
-        add("reception", r, Math.max(2.8, (W - cw) / 2 + 0.6), D - 1.5, cw, 1.33, P.counter(p, cw));
-        add("waiting", r, W - 2.1, I + 0.1, 1.9, 0.88, P.sofa(p.textile, 1.9));
+        add("reception", r, Math.min(W - cw - 0.15, Math.max(2.6, (W - cw) / 2 + 0.6)), D - 1.5, cw, 1.33, P.counter(p, cw));
+        if (W >= 4.6) add("waiting", r, W - 2.1, I + 0.1, 1.9, 0.88, P.sofa(p.textile, 1.9));
+        else add("waiting", r, W - 2.1, D - 3.0, 1.9, 0.88, P.sofa(p.textile, 1.9));
         greenery(r, 2.6, I + 0.1);
         break;
       }
@@ -132,8 +147,8 @@ export function furnishOffice(cfg: OfficeConfig, rooms: R[], p: OfficePalette, s
         add("bar", r, 0.4, D - 2.1, cw, 0.6, P.barCounter(p, cw));
         add("backbar", r, 0.4, 0.05, cw, 0.55, P.backBar(p, cw), true);
         if (add("stools", r, 0.6, D - 2.9, nStools * 0.6, 0.4, P.stools(p, nStools), false, { name: `Barstolar × ${nStools}` })) seats += nStools;
-        add("espresso", r, 0.6, D - 2.05, 0.7, 0.5, lift(P.espresso(p), 1.15));
-        add("pos", r, cw - 0.3, D - 2.0, 0.35, 0.3, lift(P.pos(), 1.15));
+        add("espresso", r, 0.6, D - 2.05, 0.7, 0.5, raise(P.espresso(p), 1.15));
+        add("pos", r, cw - 0.3, D - 2.0, 0.35, 0.3, raise(P.pos(), 1.15));
         break;
       }
       case "storkok": {
@@ -162,6 +177,11 @@ export function furnishOffice(cfg: OfficeConfig, rooms: R[], p: OfficePalette, s
         }
         add("shelving", r, W - 1.3, 0.1, 1.1, 0.5, P.tallUnit(p.steel, 1.1), true);
         break;
+      case "butik":
+      case "lager":
+      case "verkstad":
+        furnishTrade(r, ctx);
+        break;
       case "personal": {
         const lw = Math.min(2.4, W - 0.6);
         add("lockers", r, 0.3, I, lw, 0.5, P.tallUnit(p.metal, lw), false, { name: `Klädskåp för ${staff} personer`, price: staff * EQUIP.lockers[s].price });
@@ -170,5 +190,5 @@ export function furnishOffice(cfg: OfficeConfig, rooms: R[], p: OfficePalette, s
       }
     }
   }
-  return { items, seats };
+  return { items, seats, decor: decorBoxes };
 }

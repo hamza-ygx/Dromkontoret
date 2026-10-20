@@ -12,6 +12,7 @@ export interface Spec {
   grow?: boolean;
   entry?: boolean;
   min?: number;
+  ports?: number;
 }
 
 export interface Program {
@@ -22,11 +23,13 @@ export interface Program {
   corridor: string;
   target: number;
   seats: number;
+  lifts: number;
+  vans: number;
 }
 
 export const MIN_W: Record<OfficeRoomKind, number> = {
   kontor: 3.0, reception: 2.6, mote: 3.3, konferens: 4.6, pentry: 2.6, lounge: 3.8, gym: 3.6, wc: 1.4, forrad: 1.8,
-  matsal: 4.6, bar: 3.4, storkok: 4.2, disk: 3.4, kyl: 2.6, personal: 2.6, chambre: 4.4, hall: 1,
+  matsal: 4.6, bar: 3.4, storkok: 4.2, disk: 3.4, kyl: 2.6, personal: 2.6, chambre: 4.4, butik: 5.0, lager: 3.4, verkstad: 5.0, hall: 1,
 };
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -55,8 +58,81 @@ export const wcCount = (cfg: OfficeConfig, staff: number, seats: number) =>
 
 const toilets = (n: number): Spec => ({ kind: "wc", name: n > 1 ? "Toaletter" : "WC", area: n * 2.6, min: n > 1 ? 1.9 : 1.4 });
 
-function addons(cfg: OfficeConfig, staff: number, top: Spec[]) {
+function addons(cfg: OfficeConfig, staff: number, top: Spec[], bottom?: Spec[]) {
   if (cfg.addons.includes("gym")) top.push({ kind: "gym", name: addonLabel("gym", cfg.industry), area: clamp(staff * 0.7, 16, 32), move: true });
+  if (bottom && cfg.addons.includes("konferens")) bottom.push({ kind: "konferens", name: "Konferensrum", area: Math.max(20, staff * 0.9), move: true });
+}
+
+const staffRoom = (cfg: OfficeConfig, staff: number, name = "Personalrum"): Spec => {
+  const lounge = cfg.addons.includes("lounge");
+  return { kind: "personal", name: lounge ? `${name} & lounge` : name, area: Math.max(7, staff * (lounge ? 1.6 : 1.0)), move: true };
+};
+
+export function deskCount(cfg: OfficeConfig, staff: number) {
+  if (cfg.industry === "konsult") return staff;
+  if (cfg.industry === "bygg") return staff === 1 ? 1 : Math.max(1, Math.round(staff * SPACE.byggOfficeShare));
+  if (cfg.industry === "butik") return staff >= 6 ? Math.ceil(staff / 10) : 0;
+  if (cfg.industry === "verkstad") return staff >= 6 ? Math.ceil(staff * 0.15) : 0;
+  return 0;
+}
+
+export const liftCount = (staff: number) => Math.max(1, Math.round(staff * SPACE.liftsPerStaff));
+export const vanCount = (staff: number) => clamp(Math.ceil(staff * SPACE.vansPerStaff), 1, 8);
+export const shopArea = (staff: number) => Math.max(40, Math.round(SPACE.shopSalesBase * staff ** SPACE.shopSalesExponent));
+const office = (desks: number, depth: number, front: boolean) => (deskGrid(desks, depth).width + (front ? 2.2 : 0)) * depth;
+
+const base = { target: 0, seats: 0, lifts: 0, vans: 0 };
+
+function bygg(cfg: OfficeConfig, staff: number): Program {
+  const desks = deskCount(cfg, staff);
+  const storage = Math.max(24, Math.max(1, staff - desks) * SPACE.storagePerTrade);
+  const T = staff <= 10 ? 4.8 : 6.4;
+  const B = desks <= 2 ? 4.6 : 5.6;
+  const bottom: Spec[] = [{ kind: "kontor", name: "Kontor", area: office(desks, B, true), entry: true }];
+  if (staff >= 4) bottom.push({ kind: "lager", name: "Snickeri", area: storage * 0.45, grow: true, ports: 1 });
+  if (staff >= 11) bottom.push({ kind: "mote", name: "Mötesrum", area: 12, move: true });
+  const top: Spec[] = [
+    { kind: "lager", name: "Lager & verktyg", area: staff >= 4 ? storage * 0.55 : storage, grow: true, ports: 1 },
+    staffRoom(cfg, staff, "Omklädning & lunchrum"),
+  ];
+  bottom.push(toilets(wcCount(cfg, staff, 0)));
+  addons(cfg, staff, top, bottom);
+  return { ...base, top, bottom, T, B, corridor: "Korridor", vans: vanCount(staff) };
+}
+
+function butik(cfg: OfficeConfig, staff: number): Program {
+  const sales = shopArea(staff);
+  const B = sales <= 80 ? 7 : sales <= 250 ? 10 : 15;
+  const T = sales <= 250 ? 4.4 : 5.6;
+  const bottom: Spec[] = [{ kind: "butik", name: "Butik", area: sales, grow: true, entry: true }];
+  const top: Spec[] = [{ kind: "lager", name: "Lager", area: Math.max(8, sales * SPACE.stockShare), grow: true, ports: 1 }];
+  const desks = deskCount(cfg, staff);
+  if (desks) top.push({ kind: "kontor", name: "Kontor", area: office(desks, T, false), move: true });
+  if (staff > 1 || cfg.addons.includes("lounge")) top.push(staffRoom(cfg, staff));
+  top.push(toilets(wcCount(cfg, staff, 0)));
+  addons(cfg, staff, top, bottom);
+  return { ...base, top, bottom, T, B, corridor: "Personalgång" };
+}
+
+export const BAY = 4.5;
+
+function verkstad(cfg: OfficeConfig, staff: number): Program {
+  const lifts = liftCount(staff);
+  const rows = lifts > 8 ? 2 : 1;
+  const cols = Math.ceil(lifts / rows);
+  const B = rows === 2 ? 19 : 10.5;
+  const T = staff <= 10 ? 4.4 : 5.6;
+  const bottom: Spec[] = [
+    { kind: "reception", name: "Kundmottagning", area: staff >= 6 ? 16 : 10, entry: true, min: 4.2 },
+    { kind: "verkstad", name: "Verkstadshall", area: (cols * BAY + 0.6) * B, grow: true, ports: cols },
+  ];
+  const top: Spec[] = [{ kind: "lager", name: "Reservdelslager", area: Math.max(10, lifts * 3), grow: true }];
+  const desks = deskCount(cfg, staff);
+  if (desks) top.push({ kind: "kontor", name: "Kontor", area: office(desks, T, false), move: true });
+  top.push(staffRoom(cfg, staff, "Omklädning & lunchrum"));
+  top.push(toilets(wcCount(cfg, staff, 0)));
+  addons(cfg, staff, top, bottom);
+  return { ...base, top, bottom, T, B, corridor: "Korridor", lifts };
 }
 
 function konsult(cfg: OfficeConfig, staff: number): Program {
@@ -72,7 +148,7 @@ function konsult(cfg: OfficeConfig, staff: number): Program {
   if (staff >= 6) bottom.push({ kind: "forrad", name: "Kopiering & förråd", area: staff >= 18 ? 9 : 6 });
   bottom.push(toilets(wcCount(cfg, staff, 0)));
   addons(cfg, staff, top);
-  return { top, bottom, T, B, corridor: "Korridor", target: Math.max(SPACE.officeMin, staff * SPACE.officePerStaff), seats: 0 };
+  return { ...base, top, bottom, T, B, corridor: "Korridor", target: Math.max(SPACE.officeMin, staff * SPACE.officePerStaff) };
 }
 
 export const barStools = (seats: number) => (seats <= 30 ? 4 : seats <= 80 ? 6 : 8);
@@ -97,9 +173,11 @@ function restaurang(cfg: OfficeConfig, staff: number): Program {
   if (cfg.addons.includes("konferens")) bottom.push({ kind: "chambre", name: addonLabel("konferens", cfg.industry), area: 22, move: true });
   bottom.push(toilets(wcCount(cfg, staff, seats)));
   addons(cfg, staff, top);
-  return { top, bottom, T, B, corridor: "Serveringsgång", target: 0, seats };
+  return { ...base, top, bottom, T, B, corridor: "Serveringsgång", seats };
 }
 
+const PROGRAMS = { konsult, restaurang, bygg, butik, verkstad };
+
 export function program(cfg: OfficeConfig, staff: number): Program {
-  return cfg.industry === "restaurang" ? restaurang(cfg, staff) : konsult(cfg, staff);
+  return PROGRAMS[cfg.industry](cfg, staff);
 }

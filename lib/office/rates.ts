@@ -5,4 +5,11 @@ export const SPACE = {
   minSeats: 12,
   diningPerSeat: 1.3,
   kitchenShare: 0.3,
+  byggOfficeShare: 0.2,
+  storagePerTrade: 10,
+  shopSalesBase: 40,
+  shopSalesExponent: 0.8,
+  stockShare: 0.25,
+  liftsPerStaff: 0.5,
+  vansPerStaff: 1 / 3,
 };

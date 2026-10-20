@@ -4,7 +4,7 @@ All figures used by Drömkontoret live in `lib/office/rates.ts`. This file lists
 
 Confidence: **high** = primary source (authority or statistics agency), **medium** = broker or industry source, **estimate** = set by us for the demo where no published figure exists.
 
-## Space (phase 2)
+## Space
 
 | Key in `SPACE` | Value | Basis | Source | Confidence |
 | --- | --- | --- | --- | --- |
@@ -14,5 +14,11 @@ Confidence: **high** = primary source (authority or statistics agency), **medium
 | `kitchenShare` | 30 % of dining + kitchen area | Kitchen and dishwashing 25–35 % of the restaurant | Helioneon, as above | Medium |
 | `seatsPerStaff` | 5.5 seats per employee | A 60-seat restaurant has about 10–12 employees | – | Estimate |
 | `minSeats` | 12 | Smallest café | – | Estimate |
+| `byggOfficeShare` | 20 % of a construction firm's staff have a desk (minimum 1) | Most staff work on site | – | Estimate |
+| `storagePerTrade` | 10 m² store and workshop per tradesperson (minimum 24 m²) | 10–30 m² per tradesperson; split 55 % store, 45 % workshop from 4 staff | Research notes (no published norm) | Estimate |
+| `vansPerStaff` | 1 van per 3 staff (1–8) | – | – | Estimate |
+| `shopSalesBase`, `shopSalesExponent` | Sales area = 40 × staff^0.8 m² (min 40) | Specialty retail 40–100 m² sales area per FTE; larger stores have more staff per m² | No primary source found (HUI/Handelsfakta hold the data) | Estimate |
+| `stockShare` | Stockroom 25 % of sales area | – | – | Estimate |
+| `liftsPerStaff` | 0.5 lifts per employee (min 1) | Car workshops need 60–80 m² per work bay including circulation; the generator lands at about 60 m² per lift | startaenskildfirma.se – https://startaenskildfirma.se/bransch/bilmekaniker | Medium |
 
 The generated floor plans follow these norms, but rooms have minimum widths and the dining room must fit whole tables, so small companies come out somewhat larger per employee than the norm.

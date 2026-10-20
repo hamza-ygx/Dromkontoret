@@ -30,6 +30,9 @@ export type OfficeRoomKind =
   | "kyl"
   | "personal"
   | "chambre"
+  | "butik"
+  | "lager"
+  | "verkstad"
   | "hall";
 
 export interface OfficePlan extends Model3D<OfficeRoomKind> {
@@ -39,5 +42,6 @@ export interface OfficePlan extends Model3D<OfficeRoomKind> {
   depth: number;
   floorArea: number;
   seats: number;
+  metric: { value: string; label: string };
   title: string;
 }

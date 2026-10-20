@@ -2,6 +2,9 @@ import { BLACK, PORCELAIN, type Part } from "../home/furnish";
 import type { OfficePalette } from "./palette";
 import type { Style } from "./types";
 
+export const I = 0.14;
+export const raise = (parts: Part[], z: number): Part[] => parts.map(([x, v, zz, w, d, h, c, o]) => [x, v, zz + z, w, d, h, c, o]);
+export const shift = (parts: Part[], dx: number): Part[] => parts.map(([x, v, z, w, d, h, c, o]) => [x + dx, v, z, w, d, h, c, o]);
 const flip = (parts: Part[], depth: number): Part[] => parts.map(([x, v, z, w, d, h, c, o]) => [x, depth - v - d, z, w, d, h, c, o]);
 
 export const WORKSTATION_D = 1.45;

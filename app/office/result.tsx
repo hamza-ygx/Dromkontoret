@@ -27,7 +27,6 @@ export function OfficeResult({
   listRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const furniture = plan.items.reduce((a, i) => a + i.label.price, 0);
-  const restaurant = plan.config.industry === "restaurang";
   return (
     <>
       <div className="head">
@@ -45,8 +44,8 @@ export function OfficeResult({
             {plan.staff === 1 ? "anställd" : "anställda"}
           </span>
           <span>
-            <b>{restaurant ? plan.seats : plan.items.filter((i) => i.label.name.startsWith("Arbetsplats")).length}</b>
-            {restaurant ? "sittplatser" : plan.staff === 1 ? "arbetsplats" : "arbetsplatser"}
+            <b>{plan.metric.value}</b>
+            {plan.metric.label}
           </span>
           <span>
             <b>{Math.round(plan.floorArea / plan.staff)} m²</b>per anställd
@@ -78,7 +77,7 @@ export function OfficeResult({
         )}
       </div>
       <div className="total">
-        <span>Inredning och utrustning</span>
+        <span>{plan.config.industry === "bygg" ? "Inredning, utrustning och bilar" : "Inredning och utrustning"}</span>
         <strong>ca {kr(furniture)}</strong>
       </div>
       <p className="fine">Exempelföretag. Cirkapriser exkl. moms – inte rådgivning eller offert.</p>
