@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EXTRAS, TYPES, VIBES, extraAvailable } from "@/lib/home/catalog";
 import { placeById } from "@/lib/home/places";
 import { generate } from "@/lib/home/layout";
-import { estimate, kr } from "@/lib/home/price";
+import { estimate, kr, monthly, monthlyFee } from "@/lib/home/price";
 import type { Config, Extra, HomeType, Item } from "@/lib/home/types";
+import { CALC_START, Calc, type CalcState } from "./calc";
 import { PlaceSearch } from "./place-search";
 import { Scene } from "./scene";
 
@@ -66,11 +67,13 @@ export function Designer({ version }: { version: string }) {
   const [open, setOpen] = useState(true);
   const [selItem, setSelItem] = useState<string | null>(null);
   const [selRoom, setSelRoom] = useState<string | null>(null);
-  const [tab, setTab] = useState<"rum" | "inredning">("rum");
+  const [tab, setTab] = useState<"rum" | "inredning" | "kalkyl">("rum");
+  const [calc, setCalc] = useState<CalcState>(CALC_START);
   const listRef = useRef<HTMLDivElement>(null);
 
   const plan = useMemo(() => (built ? generate(built) : null), [built]);
   const est = useMemo(() => (plan ? estimate(plan) : null), [plan]);
+  const fee = useMemo(() => (plan ? monthlyFee(plan) : null), [plan]);
   const draftArea = useMemo(() => generate(cfg).livingArea, [cfg]);
 
   const build = useCallback((c: Config) => {
@@ -207,6 +210,12 @@ export function Designer({ version }: { version: string }) {
                   </span>
                 </div>
                 {est.extras > 0 && <p className="dim">Varav tillval ca {short(est.extras)}</p>}
+                {fee && (
+                  <button className="permonth" onClick={() => setTab("kalkyl")}>
+                    ≈ <b>{kr(monthly(est.price, fee.amount, calc.down, calc.rate, calc.amort).total)}</b> per månad
+                    <span>Räkna →</span>
+                  </button>
+                )}
               </div>
 
               <div className="tabs">
@@ -216,10 +225,15 @@ export function Designer({ version }: { version: string }) {
                 <button className={tab === "inredning" ? "on" : ""} onClick={() => setTab("inredning")}>
                   Inredning <span>{plan.items.length}</span>
                 </button>
+                <button className={tab === "kalkyl" ? "on" : ""} onClick={() => setTab("kalkyl")}>
+                  Kalkyl
+                </button>
               </div>
 
               <div className="list" ref={listRef}>
-                {tab === "rum" ? (
+                {tab === "kalkyl" && fee ? (
+                  <Calc price={est.price} fee={fee.amount} feeLabel={fee.label} state={calc} onChange={setCalc} />
+                ) : tab === "rum" ? (
                   <ul className="rooms">
                     {plan.rooms
                       .filter((r) => r.kind !== "hall")
@@ -265,10 +279,12 @@ export function Designer({ version }: { version: string }) {
                   ))
                 )}
               </div>
-              <div className="total">
-                <span>Inredning totalt</span>
-                <strong>ca {kr(est.furniture)}</strong>
-              </div>
+              {tab !== "kalkyl" && (
+                <div className="total">
+                  <span>Inredning totalt</span>
+                  <strong>ca {kr(est.furniture)}</strong>
+                </div>
+              )}
               <p className="fine">Cirkapriser och uppskattningar, inte rådgivning eller offert.</p>
             </>
           )}
