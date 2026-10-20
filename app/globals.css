@@ -61,6 +61,12 @@ h1, h2, h3 { margin: 0; }
 .brand p { margin: 1px 0 0; font-size: 12.5px; color: var(--muted); }
 .ver { margin-left: auto; font: 11px var(--font-mono), monospace; color: var(--dim); }
 
+.appswitch { display: flex; gap: 2px; margin-left: auto; padding: 3px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
+.appswitch a { padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+.appswitch a:hover { color: var(--ink); }
+.appswitch a.on { color: var(--ink); background: linear-gradient(180deg, var(--gold-hi), var(--gold)); box-shadow: 0 1px 3px rgba(20, 33, 58, 0.15); }
+.appswitch + .ver { margin-left: 0; }
+
 .body { position: relative; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; }
 
 /* ---------- full-screen chooser ---------- */
@@ -118,6 +124,8 @@ h1, h2, h3 { margin: 0; }
 .blk h3 em { margin-left: auto; font-style: normal; text-transform: none; letter-spacing: 0; color: var(--gold-ink); font-weight: 600; font-size: 13px; }
 
 .types { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.kontor .types { grid-template-columns: repeat(5, 1fr); }
+.kontor .seg b { font-size: 22px; white-space: nowrap; }
 .vibes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .card, .vibe {
   text-align: left;
@@ -325,6 +333,8 @@ h1, h2, h3 { margin: 0; }
   transition: border-color 0.15s, transform 0.1s;
 }
 .act svg { color: var(--gold-ink); }
+.pending { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 6px; color: var(--muted); }
+.pending b { font-family: var(--font-display), serif; font-size: 30px; font-weight: 600; color: var(--ink); }
 .act:hover { border-color: var(--gold); }
 .act:active { transform: scale(0.97); }
 
@@ -538,12 +548,13 @@ h1, h2, h3 { margin: 0; }
   body { overflow: auto; }
   .app { height: auto; min-height: 100dvh; display: flex; flex-direction: column; }
   .topbar { padding: 10px 16px; gap: 12px; height: auto; }
-  .mark .firm, .brand p, .ver { display: none; }
+  .mark .firm, .brand p, .ver, .brand { display: none; }
+  .appswitch a { padding: 7px 11px; font-size: 12.5px; }
   .mark { padding-right: 12px; }
   .body { display: flex; flex-direction: column; flex: 1; }
   .chooser { position: fixed; top: 57px; }
   .chooser .inner { padding: 18px 16px 24px; gap: 18px; }
-  .types, .vibes { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .types, .vibes, .kontor .types { grid-template-columns: 1fr 1fr; gap: 10px; }
   .card { padding: 14px; }
   .go { flex-wrap: wrap; }
   .go .build { flex: 1; }

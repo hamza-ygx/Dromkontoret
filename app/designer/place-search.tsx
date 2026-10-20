@@ -1,12 +1,30 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { perM2, placeById, preposition, searchPlaces } from "@/lib/home/places";
+import { perM2, placeById, preposition, searchPlaces, type Place } from "@/lib/home/places";
 import type { HomeType } from "@/lib/home/types";
 
 const KIND: Record<HomeType, string> = { lagenhet: "bostadsrätt", radhus: "radhus", villa: "villa", stuga: "fritidshus" };
 
-export function PlaceSearch({ type, value, onChange }: { type: HomeType; value: string; onChange: (id: string) => void }) {
+export interface PlaceFormat {
+  hit: (p: Place) => string;
+  info: (p: Place) => React.ReactNode;
+}
+
+const homeFormat = (type: HomeType): PlaceFormat => ({
+  hit: (p) => `${Math.round(perM2(type, p) / 1000)} tkr/m²`,
+  info: (p) => (
+    <>
+      Cirka <b>{Math.round(perM2(type, p) / 1000)} tkr/m²</b> för {KIND[type]} {preposition(p)} {p.name}
+    </>
+  ),
+});
+
+type Props = { value: string; onChange: (id: string) => void } & ({ type: HomeType } | { format: PlaceFormat });
+
+export function PlaceSearch(props: Props) {
+  const { value, onChange } = props;
+  const fmt = "format" in props ? props.format : homeFormat(props.type);
   const selected = placeById(value);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -70,9 +88,7 @@ export function PlaceSearch({ type, value, onChange }: { type: HomeType; value: 
         />
         {!open && <span className="lan">{selected.lan}</span>}
       </div>
-      <p className="placeinfo">
-        Cirka <b>{Math.round(perM2(type, selected) / 1000)} tkr/m²</b> för {KIND[type]} {preposition(selected)} {selected.name}
-      </p>
+      <p className="placeinfo">{fmt.info(selected)}</p>
       {open && (
         <ul className="hits" id="place-list" role="listbox">
           {!query && <li className="cap">Populära</li>}
@@ -94,7 +110,7 @@ export function PlaceSearch({ type, value, onChange }: { type: HomeType; value: 
                 <b>{p.name}</b>
                 <em>{p.lan}</em>
               </span>
-              <small>{Math.round(perM2(type, p) / 1000)} tkr/m²</small>
+              <small>{fmt.hit(p)}</small>
             </li>
           ))}
         </ul>

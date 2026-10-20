@@ -6,9 +6,11 @@ import { placeById } from "@/lib/home/places";
 import { generate } from "@/lib/home/layout";
 import { estimate, kr, monthly, monthlyFee } from "@/lib/home/price";
 import type { Config, Extra, HomeType, Item } from "@/lib/home/types";
+import { AppSwitch } from "../switch";
 import { CALC_START, Calc, type CalcState } from "./calc";
 import { PlaceSearch } from "./place-search";
 import { Scene } from "./scene";
+import { StageActions } from "./stage-actions";
 
 const ROOM_WORD = ["Etta", "Tvåa", "Trea", "Fyra", "Femma"];
 const START: Config = { type: "lagenhet", rooms: 2, vibe: "ungdom", area: "stockholm", extras: ["balkong"] };
@@ -48,7 +50,7 @@ function TypeIcon({ t }: { t: HomeType }) {
   );
 }
 
-function Mark() {
+export function Mark() {
   return (
     <div className="mark" aria-label="Revisionskonsulterna J Hägglund">
       <span className="mono">RKJH</span>
@@ -60,7 +62,7 @@ function Mark() {
   );
 }
 
-export function Designer({ version }: { version: string }) {
+export function Designer({ version, visible = true }: { version: string; visible?: boolean }) {
   const [cfg, setCfg] = useState<Config>(START);
   const [built, setBuilt] = useState<Config | null>(null);
   const [buildId, setBuildId] = useState(0);
@@ -105,7 +107,7 @@ export function Designer({ version }: { version: string }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      if (!visible || e.target instanceof HTMLInputElement) return;
       if (e.key === "Enter" && open && !(e.target instanceof HTMLButtonElement)) build(cfg);
       if (e.key === "f" || e.key === "F") {
         if (document.fullscreenElement) document.exitFullscreen();
@@ -115,7 +117,7 @@ export function Designer({ version }: { version: string }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cfg, build, open]);
+  }, [cfg, build, open, visible]);
 
   // Keep the shopping list in sync with what's clicked in 3D.
   useEffect(() => {
@@ -146,6 +148,7 @@ export function Designer({ version }: { version: string }) {
           <h1>Drömboendet</h1>
           <p>Välj, bygg och se vad det kostar – på några sekunder.</p>
         </div>
+        <AppSwitch />
         <span className="ver" title="Version">v {version}</span>
       </header>
 
@@ -156,7 +159,7 @@ export function Designer({ version }: { version: string }) {
               plan={plan}
               buildId={buildId}
               quick={false}
-              active={!open}
+              active={!open && visible}
               selectedItem={selItem}
               selectedRoom={selRoom}
               onSelectItem={(id) => {
@@ -166,22 +169,7 @@ export function Designer({ version }: { version: string }) {
               onSelectRoom={setSelRoom}
             />
           )}
-          {plan && (
-            <div className="actions">
-              <button className="act" onClick={restart}>
-                <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
-                  <path d="M4 10a6 6 0 1 0 2-4.5M4 3.5V6h2.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Starta om
-              </button>
-              <button className="act" onClick={edit}>
-                <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
-                  <path d="M3 17h3.5L16 7.5 12.5 4 3 13.5zM11 5.5 14.5 9" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-                </svg>
-                Ändra
-              </button>
-            </div>
-          )}
+          {plan && <StageActions onRestart={restart} onEdit={edit} />}
           {plan && <div className="hint">Dra för att snurra · scrolla för att zooma · klicka på en möbel</div>}
         </main>
 
