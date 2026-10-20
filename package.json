@@ -1,8 +1,8 @@
 {
-  "name": "dromboendet",
+  "name": "dromkontoret",
   "version": "0.1.0",
   "private": true,
-  "description": "RKJH Drömboendet: configure a home and watch it build in 3D with price, room sizes and a shopping list.",
+  "description": "RKJH Drömboendet and Drömkontoret: configure a home or a company and watch it build in 3D with prices, costs and a shopping list.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

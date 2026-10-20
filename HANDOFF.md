@@ -1,6 +1,12 @@
 # HANDOFF – Drömkontoret
 
-Second app next to Drömboendet for RKJH's client event on 15 November 2026. Branch `feat/dromkontoret`, cut from `claude/dreamy-pascal-0crwfz` (which Vercel auto-deploys; merge only after Hamza's OK).
+Second app next to Drömboendet for RKJH's client event on 15 November 2026.
+
+## Repositories and deployment
+
+- `hamza-ygx/dromkontoret` holds the full app (Drömboendet + Drömkontoret) with Smedjan's history, on its default branch `claude/kind-euler-ip9j30`. This is the repo to import into Vercel; steps are in `README.md`.
+- The same commits are on `hamza-ygx/smedjan` branch `feat/dromkontoret`, cut from `claude/dreamy-pascal-0crwfz` (which Vercel auto-deploys from Smedjan; merge only after Hamza's OK).
+- Deployment config: plain Next.js on Vercel, no `vercel.json` needed. `next.config.ts` sets security headers (nosniff, frame deny, no-referrer, permissions policy, noindex). Set `APP_PASSCODE` (and optionally `SESSION_SECRET`) in Vercel for the event; verified in production mode that `/` and `/kontor` redirect to `/login` without a valid session.
 
 ## Ground rules
 
@@ -32,7 +38,7 @@ Second app next to Drömboendet for RKJH's client event on 15 November 2026. Bra
 | --- | --- | --- |
 | 1 | Plan, route `/kontor`, top-bar toggle, office chooser (clicks only) | Done, pushed |
 | 2 | Office generator + 3D for Konsult and Restaurang | Done, pushed |
-| 3 | All five industries + catalogue with Swedish suppliers per style | Done, awaiting OK |
+| 3 | All five industries + catalogue with Swedish suppliers per style | Done, pushed |
 | 4 | Result panel + cost model (rent, salaries, arbetsgivaravgift, break-even) + RATES.md | Next |
 | 5 | "Vart tar pengarna vägen?" money machine | |
 | 6 | Polish, 1440 / 1280×720 / phone, performance check | |
