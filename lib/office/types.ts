@@ -1,3 +1,5 @@
+import type { Model3D } from "../home/types";
+
 export type Industry = "konsult" | "bygg" | "restaurang" | "butik" | "verkstad";
 export type Headcount = "1" | "2-5" | "6-10" | "11-25" | "26-50";
 export type Style = "startup" | "skandi" | "exklusiv" | "kreativt";
@@ -9,4 +11,33 @@ export interface OfficeConfig {
   style: Style;
   area: string;
   addons: Addon[];
+}
+
+export type OfficeRoomKind =
+  | "kontor"
+  | "reception"
+  | "mote"
+  | "konferens"
+  | "pentry"
+  | "lounge"
+  | "gym"
+  | "wc"
+  | "forrad"
+  | "matsal"
+  | "bar"
+  | "storkok"
+  | "disk"
+  | "kyl"
+  | "personal"
+  | "chambre"
+  | "hall";
+
+export interface OfficePlan extends Model3D<OfficeRoomKind> {
+  config: OfficeConfig;
+  staff: number;
+  width: number;
+  depth: number;
+  floorArea: number;
+  seats: number;
+  title: string;
 }

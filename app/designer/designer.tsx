@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { EXTRAS, TYPES, VIBES, extraAvailable } from "@/lib/home/catalog";
+import { EXTRAS, PALETTE, TYPES, VIBES, extraAvailable } from "@/lib/home/catalog";
 import { placeById } from "@/lib/home/places";
 import { generate } from "@/lib/home/layout";
 import { estimate, kr, monthly, monthlyFee } from "@/lib/home/price";
-import type { Config, Extra, HomeType, Item } from "@/lib/home/types";
+import type { Config, Extra, HomeType } from "@/lib/home/types";
 import { AppSwitch } from "../switch";
 import { CALC_START, Calc, type CalcState } from "./calc";
+import { ItemList, RoomList, m2 } from "./lists";
 import { PlaceSearch } from "./place-search";
 import { Scene } from "./scene";
 import { StageActions } from "./stage-actions";
@@ -15,7 +16,6 @@ import { StageActions } from "./stage-actions";
 const ROOM_WORD = ["Etta", "Tvåa", "Trea", "Fyra", "Femma"];
 const START: Config = { type: "lagenhet", rooms: 2, vibe: "ungdom", area: "stockholm", extras: ["balkong"] };
 
-const m2 = (v: number) => `${v.toFixed(1).replace(".", ",").replace(",0", "")} m²`;
 const short = (v: number) => (v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1).replace(".", ",")} mkr` : kr(v));
 
 function TypeIcon({ t }: { t: HomeType }) {
@@ -126,16 +126,6 @@ export function Designer({ version, visible = true }: { version: string; visible
     requestAnimationFrame(() => listRef.current?.querySelector(`[data-li="${selItem}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
   }, [selItem]);
 
-  const groups = useMemo(() => {
-    if (!plan) return [];
-    const g = new Map<string, Item[]>();
-    for (const it of plan.items) {
-      if (!g.has(it.room)) g.set(it.room, []);
-      g.get(it.room)!.push(it);
-    }
-    return [...g.entries()];
-  }, [plan]);
-
   const typeLabel = TYPES.find((t) => t.id === cfg.type)!.label;
   const areaLabel = placeById(cfg.area).name;
   const vibeLabel = VIBES.find((v) => v.id === cfg.vibe)!.label;
@@ -157,6 +147,7 @@ export function Designer({ version, visible = true }: { version: string; visible
           {plan && (
             <Scene
               plan={plan}
+              palette={PALETTE[plan.config.vibe]}
               buildId={buildId}
               quick={false}
               active={!open && visible}
@@ -222,49 +213,16 @@ export function Designer({ version, visible = true }: { version: string; visible
                 {tab === "kalkyl" && fee ? (
                   <Calc price={est.price} fee={fee.amount} feeLabel={fee.label} state={calc} onChange={setCalc} />
                 ) : tab === "rum" ? (
-                  <ul className="rooms">
-                    {plan.rooms
-                      .filter((r) => r.kind !== "hall")
-                      .map((r) => (
-                        <li key={r.id}>
-                          <button
-                            className={selRoom === r.id ? "on" : ""}
-                            onClick={() => {
-                              setSelItem(null);
-                              setSelRoom(selRoom === r.id ? null : r.id);
-                            }}
-                          >
-                            <span>{r.name}</span>
-                            <em>
-                              {r.w.toFixed(1).replace(".", ",")} × {r.d.toFixed(1).replace(".", ",")} m
-                            </em>
-                            <b>{m2(r.w * r.d)}</b>
-                          </button>
-                        </li>
-                      ))}
-                  </ul>
+                  <RoomList
+                    rooms={plan.rooms}
+                    selected={selRoom}
+                    onSelect={(id) => {
+                      setSelItem(null);
+                      setSelRoom(id);
+                    }}
+                  />
                 ) : (
-                  groups.map(([room, items]) => (
-                    <div key={room} className="grp">
-                      <h3>{room}</h3>
-                      <ul>
-                        {items.map((it) => (
-                          <li key={it.id} data-li={it.id}>
-                            <button className={selItem === it.id ? "on" : ""} onClick={() => setSelItem(selItem === it.id ? null : it.id)}>
-                              <span>
-                                <b>{it.label.name}</b>
-                                <em>
-                                  {it.label.store}
-                                  {it.label.size !== "–" ? ` · ${it.label.size}` : ""}
-                                </em>
-                              </span>
-                              <strong>{it.label.price ? `ca ${it.label.price.toLocaleString("sv-SE")} kr` : "Ingår"}</strong>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))
+                  <ItemList items={plan.items} selected={selItem} onSelect={setSelItem} />
                 )}
               </div>
               {tab !== "kalkyl" && (

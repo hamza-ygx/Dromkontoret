@@ -2,16 +2,16 @@ import { CATALOG, type CatalogKind, type Palette } from "./catalog";
 import type { Box, Config, Item, Room } from "./types";
 
 /** A part of a piece of furniture in item-local metres: lx along the room width, lv away from the item's back. */
-type Part = [lx: number, lv: number, z: number, w: number, d: number, h: number, color: string, opts?: Partial<Box>];
+export type Part = [lx: number, lv: number, z: number, w: number, d: number, h: number, color: string, opts?: Partial<Box>];
 
-const WHITE = "#f4f4f2";
-const BLACK = "#22252a";
-const PORCELAIN = "#fbfbfa";
+export const WHITE = "#f4f4f2";
+export const BLACK = "#22252a";
+export const PORCELAIN = "#fbfbfa";
 
 let seq = 0;
 
 /** Place parts in a room. `front` mirrors the item so its back sits against the corridor-side wall. */
-function place(room: Room, u: number, v: number, w: number, d: number, parts: Part[], front = false): { boxes: Box[]; rect: { x: number; y: number; w: number; d: number } } {
+export function place(room: Room<string>, u: number, v: number, w: number, d: number, parts: Part[], front = false): { boxes: Box[]; rect: { x: number; y: number; w: number; d: number } } {
   // Local frame: top-row rooms have their window wall at y = room.y; bottom-row rooms at y = room.y + room.d.
   const flipRoom = room.row === "bottom";
   const boxes = parts.map(([lx, lv, z, bw, bd, h, color, opts]) => {
@@ -50,12 +50,12 @@ const tvBench = (p: Palette, w: number): Part[] => [
   [0, 0, 0, w, 0.42, 0.46, p.dark],
   [w * 0.12, 0.16, 0.46, w * 0.76, 0.05, w * 0.42, BLACK, { className: "screen" }],
 ];
-const rug = (p: Palette, w: number, d: number): Part[] => [[0, 0, 0.02, w, d, 0.01, p.rug, { flat: true }]];
-const plant = (p: Palette, s = 1): Part[] => [
+export const rug = (p: Palette, w: number, d: number): Part[] => [[0, 0, 0.02, w, d, 0.01, p.rug, { flat: true }]];
+export const plant = (p: Palette, s = 1): Part[] => [
   [0.05 * s, 0.05 * s, 0, 0.4 * s, 0.4 * s, 0.42 * s, "#c46f4a", { round: true }],
   [-0.12 * s, -0.12 * s, 0.42 * s, 0.74 * s, 0.74 * s, 0.75 * s, p.plant, { round: true, className: "crown" }],
 ];
-const lamp = (p: Palette): Part[] => [
+export const lamp = (p: Palette): Part[] => [
   [0.12, 0.12, 0, 0.06, 0.06, 1.45, p.metal],
   [0, 0, 1.35, 0.3, 0.3, 0.28, p.light, { round: true, className: "glow" }],
 ];
@@ -84,13 +84,13 @@ const desk = (p: Palette, w: number, gaming: boolean): Part[] => {
   else parts.push([w * 0.3, 0.1, 0.74, w * 0.4, 0.04, 0.3, BLACK, { className: "screen" }]);
   return parts;
 };
-const shelf = (p: Palette, w: number, h = 1.9): Part[] => [[0, 0, 0, w, 0.32, h, p.wood]];
+export const shelf = (p: Palette, w: number, h = 1.9): Part[] => [[0, 0, 0, w, 0.32, h, p.wood]];
 const beanbag = (p: Palette): Part[] => [[0, 0, 0, 0.95, 0.95, 0.58, p.accent2, { round: true }]];
-const armchair = (p: Palette): Part[] => [
+export const armchair = (p: Palette): Part[] => [
   [0, 0, 0, 0.8, 0.82, 0.42, p.accent],
   [0, 0, 0.42, 0.8, 0.2, 0.45, p.accent],
 ];
-const dining = (p: Palette, tw: number, td: number, chairs: number): Part[] => {
+export const dining = (p: Palette, tw: number, td: number, chairs: number): Part[] => {
   const parts: Part[] = [[0.45, 0.45, 0, tw, td, 0.75, p.wood]];
   const per = Math.max(1, Math.round(chairs / 2));
   for (let i = 0; i < per; i++) {
@@ -100,7 +100,7 @@ const dining = (p: Palette, tw: number, td: number, chairs: number): Part[] => {
   }
   return parts;
 };
-const kitchen = (p: Palette, len: number): Part[] => [
+export const kitchen = (p: Palette, len: number): Part[] => [
   [0, 0, 0, 0.68, 0.66, 1.95, p.metal],
   [0.7, 0, 0, len - 0.7, 0.62, 0.88, p.cabinet],
   [0.7, 0, 0.88, len - 0.7, 0.64, 0.05, p.counter],
@@ -108,15 +108,15 @@ const kitchen = (p: Palette, len: number): Part[] => [
   [0.7 + (len - 0.7) * 0.55, 0.12, 0.935, 0.58, 0.5, 0.01, BLACK, { flat: true }],
   [0.7 + (len - 0.7) * 0.18, 0.12, 0.935, 0.5, 0.4, 0.01, "#b9c0c7", { flat: true }],
 ];
-const island = (p: Palette, w: number): Part[] => [
+export const island = (p: Palette, w: number): Part[] => [
   [0, 0, 0, w, 0.85, 0.88, p.cabinet],
   [-0.05, -0.05, 0.88, w + 0.1, 0.95, 0.05, p.counter],
 ];
-const toilet = (): Part[] => [
+export const toilet = (): Part[] => [
   [0, 0, 0, 0.38, 0.18, 0.82, PORCELAIN],
   [0.02, 0.18, 0, 0.34, 0.45, 0.42, PORCELAIN, { round: true }],
 ];
-const vanity = (p: Palette, w = 0.8): Part[] => [
+export const vanity = (p: Palette, w = 0.8): Part[] => [
   [0, 0, 0, w, 0.48, 0.84, p.cabinet],
   [0.15, 0.1, 0.84, w - 0.3, 0.32, 0.03, PORCELAIN],
   [0.05, 0, 1.15, w - 0.1, 0.03, 0.75, "#cfe3ec", { glass: true }],
@@ -125,7 +125,7 @@ const tub = (): Part[] => [
   [0, 0, 0, 1.7, 0.78, 0.56, PORCELAIN],
   [0.1, 0.1, 0.56, 1.5, 0.58, 0.01, "#9fd3e6", { flat: true, className: "water" }],
 ];
-const shower = (): Part[] => [
+export const shower = (): Part[] => [
   [0, 0, 0, 0.92, 0.92, 0.04, "#e3e8ec"],
   [0, 0.9, 0, 0.92, 0.03, 2.0, "#cfe3ec", { glass: true }],
   [0.9, 0, 0, 0.03, 0.92, 2.0, "#cfe3ec", { glass: true }],

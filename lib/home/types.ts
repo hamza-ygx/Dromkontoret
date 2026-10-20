@@ -30,9 +30,9 @@ export interface Rect {
   d: number;
 }
 
-export interface Room extends Rect {
+export interface Room<K extends string = RoomKind> extends Rect {
   id: string;
-  kind: RoomKind;
+  kind: K;
   name: string;
   row: "top" | "bottom" | "corridor";
 }
@@ -91,16 +91,19 @@ export interface Item {
   d: number;
 }
 
-export interface Plan {
-  config: Config;
-  width: number;
-  depth: number;
-  rooms: Room[];
+export interface Model3D<K extends string = string> {
+  rooms: Room<K>[];
   walls: WallRun[];
   /** Ground, garden, water, outdoor structures (not purchasable). */
   site: Box[];
   items: Item[];
   bounds: Rect;
+}
+
+export interface Plan extends Model3D<RoomKind> {
+  config: Config;
+  width: number;
+  depth: number;
   livingArea: number;
   title: string;
 }

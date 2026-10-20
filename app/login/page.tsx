@@ -38,7 +38,7 @@ export default function Login() {
             <br />J Hägglund
           </span>
         </div>
-        <h1>Drömboendet</h1>
+        <h1>Drömboendet & Drömkontoret</h1>
         <p>Ange koden för att fortsätta</p>
         <input
           type="password"

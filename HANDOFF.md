@@ -14,27 +14,41 @@ Second app next to Drömboendet for RKJH's client event on 15 November 2026. Bra
 
 - `app/(apps)/layout.tsx` keeps both apps mounted in `app/apps.tsx`; `app/(apps)/page.tsx` (`/`) and `app/(apps)/kontor/page.tsx` (`/kontor`) render nothing. Drömkontoret mounts on first visit and then stays mounted, so each app keeps its own choices, built model and camera.
 - `app/switch.tsx`: segmented toggle in the top bar. Switches with `history.pushState`, so it never hits the network (verified offline) and never replays a build. Back/forward work. A hidden app pauses its render loop (`active`) and ignores keyboard shortcuts (`visible`).
-- `lib/office/` mirrors `lib/home/`: `types.ts`, `catalog.ts` (options now; furniture catalogue in phase 3), then `layout.ts`, `furnish.ts`, `rates.ts`, `cost.ts`.
-- `app/office/`: `office-designer.tsx` (state, top bar, stage, result), `chooser.tsx`, `icons.tsx`.
-- Shared with Drömboendet: `Mark`, `StageActions` (Starta om / Ändra), `PlaceSearch` (now takes an optional `format` for the per-kommun figure), `places.ts`, `Scene`.
+- `lib/office/` mirrors `lib/home/`:
+  - `types.ts` config, room kinds, `OfficePlan` (extends the shared `Model3D`)
+  - `catalog.ts` chooser options; `equipment.ts` furniture/equipment catalogue per style (cirkapris exkl. moms, Swedish suppliers)
+  - `palette.ts` colours per style
+  - `rates.ts` every adjustable figure (space now; rents, salaries, taxes in phase 4) – sources in `RATES.md`
+  - `programs.ts` room programme per industry (which rooms, how big, which row); desk and table grids
+  - `layout.ts` `generateOffice(config)`: balances rooms over two rows + corridor, walls with doors, shop windows and a glass entrance on the street side, pavement, trees, parking with chargers
+  - `furnish.ts` places items per room kind; `parts.ts` the box builders
+- `app/office/`: `office-designer.tsx` (state, top bar, stage), `chooser.tsx`, `result.tsx` (result panel), `icons.tsx`.
+- Shared with Drömboendet: `Mark`, `StageActions`, `RoomList`/`ItemList` (`app/designer/lists.tsx`), `PlaceSearch` (optional `format`), `places.ts`, `Scene` (now takes any `Model3D` plus a wall `palette`), and the `place()` helper and generic builders exported from `lib/home/furnish.ts`.
+- Not yet built: Bygg, Butik and Verkstad currently fall back to the Konsult layout (phase 3).
 
 ## Phases
 
 | # | Scope | Status |
 | --- | --- | --- |
-| 1 | Plan, route `/kontor`, top-bar toggle, office chooser (clicks only) | Done, awaiting OK |
-| 2 | Office generator + 3D for Konsult and Restaurang | Next |
-| 3 | All five industries + catalogue with Swedish suppliers per style | |
+| 1 | Plan, route `/kontor`, top-bar toggle, office chooser (clicks only) | Done, pushed |
+| 2 | Office generator + 3D for Konsult and Restaurang | Done, awaiting OK |
+| 3 | All five industries + catalogue with Swedish suppliers per style | Next |
 | 4 | Result panel + cost model (rent, salaries, arbetsgivaravgift, break-even) + RATES.md | |
 | 5 | "Vart tar pengarna vägen?" money machine | |
 | 6 | Polish, 1440 / 1280×720 / phone, performance check | |
 
-## Plan for phase 2 onwards
+## Phase 2 results (Konsult, Restaurang)
 
-- Scene reuse: `Scene` reads wall colours from `PALETTE[plan.config.vibe]`. Phase 2 adds a `walls` colour prop (Drömboendet passes the same palette entry) and a shared `Model3D` shape in `lib/home/types.ts` that `Plan` extends, so the office plan renders through the same component and choreography. `Room` gets a generic kind parameter defaulting to the home kinds.
-- Office layout: same two-row + corridor idea, parameterised per industry. Konsult: open plan (one desk per employee), meeting rooms, reception, kitchen, WC. Restaurang: dining room, commercial kitchen, bar, WC, staff room. Bygg: office + yard with van and material racks (site boxes). Butik: shop floor with shelves + checkout, stockroom. Verkstad: one large hall with lifts/workbenches, office, staff room.
-- Furniture: reuse the `place()` local-frame helper and the generic builders from `lib/home/furnish.ts` by exporting them (no behaviour change).
-- Floor area from m² per employee per industry (sourced, in `rates.ts`).
+- Headcount bands build 1 / 4 / 8 / 18 / 35 staff (confirmed by Hamza).
+- Konsult: open plan with one desk per employee (double rows from 11 staff), reception/entré, meeting rooms (1 per ~9 staff), pentry or lounge, copy room, toilets; 15 m² per employee from 6 staff, more for tiny firms.
+- Restaurang: 5.5 seats per employee (12 minimum), dining room sized by seats and whole tables, bar with stools, kitchen, dish, cold rooms, staff room. Up to 30 seats it becomes a "Café" with a smaller kitchen kit and no separate dish room.
+- Build to explorable in about 4.5–5.3 s. Every visible piece is clickable (name, size, cirkapris, store).
+- Spin check (headless, software rendering): style recalc is one cheap recalc per frame from the root transform, same as Drömboendet. The 35-person scenes have about 3 700 DOM nodes against 2 100 for a 5-room villa; verify frame rate on the event machine in phase 6.
+
+## Plan for phase 3
+
+- Bygg: office part + material storage + yard with van and racks (site boxes). Butik: shop floor with shelves and checkout, stockroom. Verkstad: workshop hall with lifts and workbenches (taller walls via an optional wall height), office, staff room.
+- Catalogue rows for those industries (Würth, Clas Ohlson, etc.).
 
 ## Risks
 

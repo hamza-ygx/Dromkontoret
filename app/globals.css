@@ -333,8 +333,6 @@ h1, h2, h3 { margin: 0; }
   transition: border-color 0.15s, transform 0.1s;
 }
 .act svg { color: var(--gold-ink); }
-.pending { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 6px; color: var(--muted); }
-.pending b { font-family: var(--font-display), serif; font-size: 30px; font-weight: 600; color: var(--ink); }
 .act:hover { border-color: var(--gold); }
 .act:active { transform: scale(0.97); }
 

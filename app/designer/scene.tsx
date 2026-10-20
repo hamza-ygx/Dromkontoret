@@ -1,8 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PALETTE } from "@/lib/home/catalog";
-import type { Box, Item, Plan, WallRun } from "@/lib/home/types";
+import type { Box, Item, Model3D, WallRun } from "@/lib/home/types";
 
 const M = 40; // px per metre in the model
 const WALL_H = 2.6;
@@ -111,8 +110,12 @@ function wallBoxes(run: WallRun, color: string): Box[] {
 }
 
 // ---------- the static model (memoised: only re-renders when the plan changes) ----------
-const Model = memo(function Model({ plan, quick }: { plan: Plan; quick: boolean }) {
-  const pal = PALETTE[plan.config.vibe];
+export interface WallPalette {
+  wall: string;
+  wallTop: string;
+}
+
+const Model = memo(function Model({ plan, pal, quick }: { plan: Model3D; pal: WallPalette; quick: boolean }) {
   // Full build: blueprint (1s) → walls rise → furniture drops. Quick rebuild: ~1s total.
   const wallBase = quick ? 0 : 1.05, wallStagger = quick ? 0.25 : 1.0;
   const itemBase = quick ? 0.2 : 2.1, itemStagger = quick ? 0.55 : 1.9;
@@ -160,6 +163,7 @@ const DEFAULT = { rx: 57, rz: -32, zoom: 1 };
 
 export function Scene({
   plan,
+  palette,
   buildId,
   quick,
   active = true,
@@ -168,7 +172,8 @@ export function Scene({
   onSelectItem,
   onSelectRoom,
 }: {
-  plan: Plan;
+  plan: Model3D;
+  palette: WallPalette;
   buildId: number;
   quick: boolean;
   active?: boolean;
@@ -381,7 +386,7 @@ export function Scene({
       <div className="world" ref={worldRef}>
         <div className={`plan ${quick ? "quick" : "full"}`} key={buildId} style={{ left: px(-cx), top: px(-cy) }}>
           <div className="ground" style={{ left: px(plan.bounds.x - 3), top: px(plan.bounds.y - 3), width: px(plan.bounds.w + 6), height: px(plan.bounds.d + 6) }} />
-          <Model plan={plan} quick={quick} />
+          <Model plan={plan} pal={palette} quick={quick} />
           {labels}
         </div>
       </div>
