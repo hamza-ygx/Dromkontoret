@@ -22,8 +22,8 @@ Keys: **Enter** builds, **F** toggles fullscreen, **Esc** closes the item card. 
 
 ## Deploy on Vercel
 
-1. Vercel → **Add New → Project** → import `hamza-ygx/dromkontoret`. Framework preset **Next.js** is detected; keep the default build command (`next build`) and output.
-2. Node.js version: 20 or newer (Vercel's default is fine).
+1. Vercel → **Add New → Project** → import `hamza-ygx/dromkontoret`. `vercel.json` pins the framework to Next.js, so no build or output settings are needed.
+2. Node.js 22 (pinned in `package.json`).
 3. Environment variables (Production and Preview):
    - `APP_PASSCODE` – code for the login screen. Leave unset to keep the app open. **Set it for the event deployment.**
    - `SESSION_SECRET` – optional long random string for signing the session cookie (defaults to `APP_PASSCODE`). Changing either logs everyone out.
