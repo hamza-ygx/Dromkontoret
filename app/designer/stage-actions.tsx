@@ -1,4 +1,4 @@
-export function StageActions({ onRestart, onEdit }: { onRestart: () => void; onEdit: () => void }) {
+export function StageActions({ onRestart, onEdit, children }: { onRestart: () => void; onEdit: () => void; children?: React.ReactNode }) {
   return (
     <div className="actions">
       <button className="act" onClick={onRestart}>
@@ -13,6 +13,7 @@ export function StageActions({ onRestart, onEdit }: { onRestart: () => void; onE
         </svg>
         Ändra
       </button>
+      {children}
     </div>
   );
 }

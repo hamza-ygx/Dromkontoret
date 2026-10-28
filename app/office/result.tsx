@@ -2,13 +2,19 @@
 
 import { kr } from "@/lib/home/price";
 import { INDUSTRIES, STYLES } from "@/lib/office/catalog";
-import type { OfficePlan } from "@/lib/office/types";
+import type { OfficeCosts } from "@/lib/office/costs";
+import type { OfficePlan, RevenueLevel } from "@/lib/office/types";
 import { ItemList, RoomList, m2 } from "../designer/lists";
+import { Kalkyl } from "./kalkyl";
 
-export type OfficeTab = "rum" | "inredning";
+export type OfficeTab = "kalkyl" | "rum" | "inredning";
 
 export function OfficeResult({
   plan,
+  costs,
+  level,
+  onLevel,
+  onMachine,
   tab,
   onTab,
   selItem,
@@ -18,6 +24,10 @@ export function OfficeResult({
   listRef,
 }: {
   plan: OfficePlan;
+  costs: OfficeCosts;
+  level: RevenueLevel;
+  onLevel: (l: RevenueLevel) => void;
+  onMachine: () => void;
   tab: OfficeTab;
   onTab: (t: OfficeTab) => void;
   selItem: string | null;
@@ -26,7 +36,6 @@ export function OfficeResult({
   onSelectRoom: (id: string | null) => void;
   listRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const furniture = plan.items.reduce((a, i) => a + i.label.price, 0);
   return (
     <>
       <div className="head">
@@ -36,24 +45,28 @@ export function OfficeResult({
         <h2>{plan.title}</h2>
       </div>
       <div className="price">
-        <small>Lokalens yta</small>
-        <strong>{m2(plan.floorArea)}</strong>
+        <small>Kostnad per månad</small>
+        <strong>{kr(costs.total)}</strong>
         <div className="facts">
           <span>
-            <b>{plan.staff}</b>
-            {plan.staff === 1 ? "anställd" : "anställda"}
+            <b>{m2(plan.floorArea)}</b>
+            {plan.staff} {plan.staff === 1 ? "anställd" : "anställda"}
           </span>
           <span>
             <b>{plan.metric.value}</b>
             {plan.metric.label}
           </span>
           <span>
-            <b>{Math.round(plan.floorArea / plan.staff)} m²</b>per anställd
+            <b>{Math.round(costs.breakEven / 1000).toLocaleString("sv-SE")} tkr</b>
+            break-even/mån
           </span>
         </div>
       </div>
 
       <div className="tabs">
+        <button className={tab === "kalkyl" ? "on" : ""} onClick={() => onTab("kalkyl")}>
+          Kalkyl
+        </button>
         <button className={tab === "rum" ? "on" : ""} onClick={() => onTab("rum")}>
           Rum <span>{plan.rooms.filter((r) => r.kind !== "hall").length}</span>
         </button>
@@ -63,7 +76,9 @@ export function OfficeResult({
       </div>
 
       <div className="list" ref={listRef}>
-        {tab === "rum" ? (
+        {tab === "kalkyl" ? (
+          <Kalkyl plan={plan} costs={costs} level={level} onLevel={onLevel} onMachine={onMachine} />
+        ) : tab === "rum" ? (
           <RoomList
             rooms={plan.rooms}
             selected={selRoom}
@@ -76,11 +91,13 @@ export function OfficeResult({
           <ItemList items={plan.items} selected={selItem} onSelect={onSelectItem} />
         )}
       </div>
-      <div className="total">
-        <span>{plan.config.industry === "bygg" ? "Inredning, utrustning och bilar" : "Inredning och utrustning"}</span>
-        <strong>ca {kr(furniture)}</strong>
-      </div>
-      <p className="fine">Exempelföretag. Cirkapriser exkl. moms – inte rådgivning eller offert.</p>
+      {tab !== "kalkyl" && (
+        <div className="total">
+          <span>{plan.config.industry === "bygg" ? "Inredning, utrustning och bilar" : "Inredning och utrustning"}</span>
+          <strong>ca {kr(costs.furnishing)}</strong>
+        </div>
+      )}
+      <p className="fine">Exempelföretag med schablonvärden. Cirkapriser exkl. moms – inte rådgivning eller offert.</p>
     </>
   );
 }

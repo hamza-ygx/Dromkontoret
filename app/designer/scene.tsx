@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Box, Item, Model3D, WallRun } from "@/lib/home/types";
 
-const M = 40; // px per metre in the model
+export const M = 40; // px per metre in the model
 const WALL_H = 2.6;
 
 // ---------- colour helpers ----------
@@ -68,7 +68,7 @@ function Faces({ b, top }: { b: Box; top?: string }) {
   );
 }
 
-function BoxEl({ b, delay, top }: { b: Box; delay?: number; top?: string }) {
+export function BoxEl({ b, delay, top }: { b: Box; delay?: number; top?: string }) {
   return (
     <div className={`bx ${b.className ?? ""}`} style={{ left: px(b.x), top: px(b.y), width: px(b.w), height: px(b.d), transform: `translateZ(${px(b.z)})` }}>
       <div className="an" style={delay !== undefined ? { animationDelay: `${delay.toFixed(2)}s` } : undefined}>

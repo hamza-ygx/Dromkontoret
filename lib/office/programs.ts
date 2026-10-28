@@ -140,7 +140,7 @@ function konsult(cfg: OfficeConfig, staff: number): Program {
   const B = staff === 1 ? 3.2 : staff <= 10 ? 4.2 : 4.8;
   const top: Spec[] = [{ kind: "kontor", name: staff === 1 ? "Kontor" : "Kontorslandskap", area: deskGrid(staff, T).width * T, grow: true }];
   const bottom: Spec[] = [{ kind: "reception", name: staff >= 6 ? "Reception" : "Entré", area: staff >= 6 ? clamp(staff * 0.8, 12, 26) : 6, entry: true }];
-  const meetings = staff === 1 ? 0 : staff <= 10 ? 1 : Math.ceil(staff / 9);
+  const meetings = staff <= 10 ? 1 : Math.ceil(staff / 9);
   for (let i = 0; i < meetings; i++) bottom.push({ kind: "mote", name: numbered("Mötesrum", meetings, i), area: 12, move: true });
   if (cfg.addons.includes("konferens")) bottom.push({ kind: "konferens", name: "Konferensrum", area: Math.max(24, staff * 0.9), move: true });
   const lounge = cfg.addons.includes("lounge");

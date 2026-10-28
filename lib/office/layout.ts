@@ -72,7 +72,9 @@ export function generateOffice(cfg: OfficeConfig): OfficePlan {
     const ws = list.map((s) => width(s, depth));
     const slack = W - ws.reduce((a, b) => a + b, 0);
     const growers = list.map((s, i) => (s.grow ? i : -1)).filter((i) => i >= 0);
-    const share = growers.length ? growers : list.map((s, i) => (s.kind === "wc" || s.kind === "forrad" ? -1 : i)).filter((i) => i >= 0);
+    const pick = (skip: OfficeRoomKind[]) => list.map((s, i) => (skip.includes(s.kind) ? -1 : i)).filter((i) => i >= 0);
+    const rest = pick(["wc", "forrad", "reception"]);
+    const share = growers.length ? growers : rest.length ? rest : pick(["wc", "forrad"]);
     share.forEach((i) => (ws[i] += slack / share.length));
     let x = 0;
     list.forEach((s, i) => {

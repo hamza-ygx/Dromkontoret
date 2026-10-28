@@ -4,6 +4,7 @@ export type Industry = "konsult" | "bygg" | "restaurang" | "butik" | "verkstad";
 export type Headcount = "1" | "2-5" | "6-10" | "11-25" | "26-50";
 export type Style = "startup" | "skandi" | "exklusiv" | "kreativt";
 export type Addon = "konferens" | "lounge" | "gym" | "parkering";
+export type RevenueLevel = "low" | "normal" | "high";
 
 export interface OfficeConfig {
   industry: Industry;

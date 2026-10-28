@@ -1,14 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { officeCosts } from "@/lib/office/costs";
 import { generateOffice } from "@/lib/office/layout";
 import { OFFICE_PALETTE } from "@/lib/office/palette";
-import type { OfficeConfig } from "@/lib/office/types";
+import type { OfficeConfig, RevenueLevel } from "@/lib/office/types";
 import { Mark } from "../designer/designer";
 import { Scene } from "../designer/scene";
 import { StageActions } from "../designer/stage-actions";
 import { AppSwitch } from "../switch";
 import { OfficeChooser } from "./chooser";
+import { Coin } from "./kalkyl";
+import { MoneyMachine } from "./money-machine";
 import { OfficeResult, type OfficeTab } from "./result";
 
 const START: OfficeConfig = { industry: "konsult", size: "6-10", style: "skandi", area: "halmstad", addons: ["konferens"] };
@@ -20,17 +23,21 @@ export function OfficeDesigner({ version, visible }: { version: string; visible:
   const [open, setOpen] = useState(true);
   const [selItem, setSelItem] = useState<string | null>(null);
   const [selRoom, setSelRoom] = useState<string | null>(null);
-  const [tab, setTab] = useState<OfficeTab>("rum");
+  const [tab, setTab] = useState<OfficeTab>("kalkyl");
+  const [level, setLevel] = useState<RevenueLevel>("normal");
+  const [money, setMoney] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const plan = useMemo(() => (built ? generateOffice(built) : null), [built]);
+  const costs = useMemo(() => (plan ? officeCosts(plan) : null), [plan]);
 
   const build = useCallback((c: OfficeConfig) => {
     setBuilt(c);
     setBuildId((n) => n + 1);
     setSelItem(null);
     setSelRoom(null);
-    setTab("rum");
+    setTab("kalkyl");
+    setMoney(false);
     setOpen(false);
   }, []);
   const restart = () => {
@@ -38,6 +45,8 @@ export function OfficeDesigner({ version, visible }: { version: string; visible:
     setBuilt(null);
     setSelItem(null);
     setSelRoom(null);
+    setMoney(false);
+    setLevel("normal");
     setOpen(true);
   };
 
@@ -49,7 +58,10 @@ export function OfficeDesigner({ version, visible }: { version: string; visible:
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen?.().catch(() => {});
       }
-      if (e.key === "Escape") setSelItem(null);
+      if (e.key === "Escape") {
+        setSelItem(null);
+        setMoney(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -58,6 +70,7 @@ export function OfficeDesigner({ version, visible }: { version: string; visible:
   useEffect(() => {
     if (!selItem) return;
     setTab("inredning");
+    setMoney(false);
     requestAnimationFrame(() => listRef.current?.querySelector(`[data-li="${selItem}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
   }, [selItem]);
 
@@ -74,14 +87,14 @@ export function OfficeDesigner({ version, visible }: { version: string; visible:
       </header>
 
       <div className="body">
-        <main className="stage">
+        <main className={`stage kstage${money ? " money" : ""}`}>
           {plan && (
             <Scene
               plan={plan}
               palette={OFFICE_PALETTE[plan.config.style]}
               buildId={buildId}
               quick={false}
-              active={!open && visible}
+              active={!open && visible && !money}
               selectedItem={selItem}
               selectedRoom={selRoom}
               onSelectItem={(id) => {
@@ -91,14 +104,26 @@ export function OfficeDesigner({ version, visible }: { version: string; visible:
               onSelectRoom={setSelRoom}
             />
           )}
-          {plan && <StageActions onRestart={restart} onEdit={() => setOpen(true)} />}
+          {plan && (
+            <StageActions onRestart={restart} onEdit={() => setOpen(true)}>
+              <button className="act gold" onClick={() => setMoney(true)}>
+                <Coin />
+                Vart tar pengarna vägen?
+              </button>
+            </StageActions>
+          )}
+          {plan && costs && money && <MoneyMachine plan={plan} costs={costs} level={level} onLevel={setLevel} onClose={() => setMoney(false)} />}
           {plan && <div className="hint">Dra för att snurra · scrolla för att zooma · klicka på en möbel</div>}
         </main>
 
         <aside className="result">
-          {plan && (
+          {plan && costs && (
             <OfficeResult
               plan={plan}
+              costs={costs}
+              level={level}
+              onLevel={setLevel}
+              onMachine={() => setMoney(true)}
               tab={tab}
               onTab={setTab}
               selItem={selItem}
