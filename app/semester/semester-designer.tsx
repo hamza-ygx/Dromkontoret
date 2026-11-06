@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { destById } from "@/lib/semester/catalog";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { cardsFor, spotFor } from "@/lib/semester/cards";
+import { ORIGIN } from "@/lib/semester/spots";
 import { planTrip } from "@/lib/semester/trip";
 import type { Standard, TripConfig } from "@/lib/semester/types";
 import { Mark } from "../designer/designer";
-import { Scene } from "../designer/scene";
 import { StageActions } from "../designer/stage-actions";
 import { AppSwitch } from "../switch";
+import { CardFan, Lightbox } from "./cards";
 import { TripChooser } from "./chooser";
+import { Globe } from "./globe";
 import { TripResult, type TripTab } from "./result";
 
 const START: TripConfig = { dest: "grekland", budget: "100-250", party: "2", nights: 7, style: "sol", addons: [] };
@@ -18,22 +20,22 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
   const [built, setBuilt] = useState<TripConfig | null>(null);
   const [pick, setPick] = useState<Standard | undefined>(undefined);
   const [buildId, setBuildId] = useState(0);
-  const [quick, setQuick] = useState(false);
   const [open, setOpen] = useState(true);
-  const [selItem, setSelItem] = useState<string | null>(null);
-  const [selRoom, setSelRoom] = useState<string | null>(null);
+  const [arrived, setArrived] = useState(false);
+  const [card, setCard] = useState<string | null>(null);
   const [tab, setTab] = useState<TripTab>("kostnad");
-  const listRef = useRef<HTMLDivElement>(null);
 
   const plan = useMemo(() => (built ? planTrip(built, pick) : null), [built, pick]);
+  const cards = useMemo(() => (plan ? cardsFor(plan) : []), [plan]);
+  const spot = plan ? spotFor(plan) : null;
+  const opened = cards.find((c) => c.id === card);
 
   const build = useCallback((c: TripConfig) => {
     setBuilt(c);
     setPick(undefined);
-    setQuick(false);
     setBuildId((n) => n + 1);
-    setSelItem(null);
-    setSelRoom(null);
+    setArrived(false);
+    setCard(null);
     setTab("kostnad");
     setOpen(false);
   }, []);
@@ -41,17 +43,18 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
     setCfg(START);
     setBuilt(null);
     setPick(undefined);
-    setSelItem(null);
-    setSelRoom(null);
+    setCard(null);
     setOpen(true);
   };
   const choose = (s: Standard) => {
     if (!plan || s === plan.trip.standard) return;
     setPick(s);
-    setQuick(true);
+    setCard(null);
+  };
+  const replay = () => {
+    setArrived(false);
+    setCard(null);
     setBuildId((n) => n + 1);
-    setSelItem(null);
-    setSelRoom(null);
   };
 
   useEffect(() => {
@@ -62,17 +65,11 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen?.().catch(() => {});
       }
-      if (e.key === "Escape") setSelItem(null);
+      if (e.key === "Escape") setCard(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [cfg, build, open, visible]);
-
-  useEffect(() => {
-    if (!selItem) return;
-    setTab("boende");
-    requestAnimationFrame(() => listRef.current?.querySelector(`[data-li="${selItem}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
-  }, [selItem]);
 
   return (
     <div className="app">
@@ -80,7 +77,7 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
         <Mark />
         <div className="brand">
           <h1>Drömsemestern</h1>
-          <p>Välj resmål och budget – se vad pengarna räcker till.</p>
+          <p>Välj resmål och budget – se vart pengarna tar er.</p>
         </div>
         <AppSwitch />
         <span className="ver" title="Version">v {version}</span>
@@ -88,24 +85,29 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
 
       <div className="body">
         <main className="stage tstage">
-          {plan && (
-            <Scene
-              plan={plan.home}
-              palette={destById(plan.config.dest).walls}
+          {plan && spot && (
+            <Globe
+              from={[ORIGIN.lon, ORIGIN.lat]}
+              to={[spot.lon, spot.lat]}
+              fromLabel={ORIGIN.name}
+              toLabel={plan.place}
+              jet={plan.trip.standard === "jet"}
               buildId={buildId}
-              quick={quick}
-              active={!open && visible}
-              selectedItem={selItem}
-              selectedRoom={selRoom}
-              onSelectItem={(id) => {
-                setSelItem(id);
-                if (id) setSelRoom(null);
-              }}
-              onSelectRoom={setSelRoom}
+              onArrive={() => setArrived(true)}
             />
           )}
-          {plan && <StageActions onRestart={restart} onEdit={() => setOpen(true)} />}
-          {plan && <div className="hint">Dra för att snurra · scrolla för att zooma · klicka på en möbel</div>}
+          {plan && arrived && <CardFan key={`${buildId}-${plan.trip.standard}`} cards={cards} place={plan.place} onOpen={setCard} />}
+          {plan && (
+            <StageActions onRestart={restart} onEdit={() => setOpen(true)}>
+              <button className="act" onClick={replay}>
+                <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
+                  <path d="M3 11.5 17 5l-3.5 13-3.2-5.3zM10.3 12.7 17 5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                </svg>
+                Flyg igen
+              </button>
+            </StageActions>
+          )}
+          {opened && <Lightbox card={opened} onClose={() => setCard(null)} />}
         </main>
 
         <aside className="result">
@@ -115,11 +117,7 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
               tab={tab}
               onTab={setTab}
               onStandard={choose}
-              selItem={selItem}
-              selRoom={selRoom}
-              onSelectItem={setSelItem}
-              onSelectRoom={setSelRoom}
-              listRef={listRef}
+              onOpen={setCard}
             />
           )}
         </aside>

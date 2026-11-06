@@ -641,6 +641,44 @@ h1, h2, h3 { margin: 0; }
 .save li b small { font-family: var(--font-sans), system-ui, sans-serif; }
 .save .tip { padding: 10px 12px; border-radius: 10px; background: var(--gold-soft); border: 1px solid var(--gold-line); color: var(--gold-ink); font-size: 12.5px; }
 
+.globe { position: absolute; inset: 0; animation: fadein 0.6s ease-out both; }
+.globe canvas { display: block; }
+.tcards { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.tpin { position: absolute; z-index: 3; pointer-events: none; left: 50%; top: 50%; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); animation: pinin 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+.tpin i { width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--gold); box-shadow: 0 0 0 4px #fff, 0 6px 14px rgba(20, 33, 58, 0.35); margin-bottom: 10px; }
+.tpin b { order: -1; margin-bottom: 8px; padding: 4px 12px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; white-space: nowrap; box-shadow: var(--shadow); }
+@keyframes pinin { from { opacity: 0; transform: translate(-50%, -160%); } }
+.tcard { position: absolute; left: calc(50% + var(--x) * 100%); top: calc(50% + var(--y) * 100%); width: clamp(140px, 15vw, 210px); translate: -50% -50%; pointer-events: auto; display: flex; flex-direction: column; padding: 0; border: 0; border-radius: 14px; overflow: hidden; background: #fff; text-align: left; box-shadow: 0 14px 34px -14px rgba(20, 33, 58, 0.5), 0 0 0 1px rgba(20, 33, 58, 0.06); animation: fan 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.1) both; transition: transform 0.15s, box-shadow 0.15s; }
+.tcard:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -14px rgba(20, 33, 58, 0.55), 0 0 0 2px var(--gold); }
+.tcard img, .tcard .ph-missing { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.ph-missing { background: linear-gradient(135deg, #e7dcc3, #c9d9e6); }
+.tc-body { display: flex; flex-direction: column; gap: 1px; padding: 8px 11px 10px; }
+.tc-body em { font-style: normal; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-ink); font-weight: 700; }
+.tc-body b { font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.2; }
+.tc-body small { font-size: 11.5px; color: var(--muted); }
+.tcard.stay, .tcard.jet { box-shadow: 0 14px 34px -14px rgba(20, 33, 58, 0.5), 0 0 0 2px var(--gold); }
+@keyframes fan { from { left: 50%; top: 50%; opacity: 0; scale: 0.3; } }
+.tlight { position: absolute; inset: 0; z-index: 8; display: grid; place-items: center; padding: 24px; background: rgba(20, 33, 58, 0.55); backdrop-filter: blur(4px); animation: fadein 0.2s ease-out; }
+.tlight figure { position: relative; margin: 0; width: min(860px, 100%); border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.5); animation: popin2 0.25s ease-out; }
+.tlight img, .tlight .ph-missing { display: block; width: 100%; aspect-ratio: 11 / 7; object-fit: cover; }
+.tlight figcaption { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: start; padding: 14px 18px 14px; }
+.tlight figcaption b { font-family: var(--font-display), serif; font-size: 24px; font-weight: 600; color: var(--ink); }
+.tlight figcaption p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.tlight figcaption strong { font-size: 15px; color: var(--gold-ink); white-space: nowrap; padding-top: 6px; }
+.tlight figcaption small { grid-column: 1 / -1; font-size: 10.5px; color: var(--dim); }
+.tlight .x { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.92); color: var(--ink); font-size: 22px; line-height: 1; box-shadow: var(--shadow); }
+.thero { position: relative; height: 112px; flex: none; overflow: hidden; }
+.thero img, .thero .ph-missing { display: block; width: 100%; height: 100%; object-fit: cover; }
+.thero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(255, 255, 255, 0.9)); }
+.tlist { list-style: none; margin: 0; padding: 0; }
+.tlist button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px; border: 1px solid transparent; border-radius: 10px; background: none; text-align: left; color: var(--ink); }
+.tlist button:hover { background: var(--surface-2); }
+.tlist img, .tlist .ph-missing { flex: none; width: 64px; height: 44px; border-radius: 7px; object-fit: cover; }
+.tlist span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tlist b { font-size: 13px; font-weight: 600; }
+.tlist em { font-style: normal; font-size: 11.5px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tlist strong { flex: none; font-size: 12px; font-weight: 600; color: var(--gold-ink); }
+
 /* ---------- smaller screens ---------- */
 @media (max-height: 820px) and (min-width: 761px) {
   .dest { padding: 8px 10px; }
@@ -690,6 +728,12 @@ h1, h2, h3 { margin: 0; }
   .stage { height: 62vh; min-height: 380px; flex: none; }
   .stage .hint { display: none; }
   .result { border-left: 0; border-top: 1px solid var(--line); }
+  .tcards { inset: auto 0 66px 0; display: flex; gap: 8px; overflow-x: auto; padding: 0 12px 6px; pointer-events: auto; scrollbar-width: none; }
+  .tcard { position: relative; left: auto; top: auto; translate: none; flex: none; width: 148px; animation: fadein 0.4s ease-out both; }
+  .tpin { top: 36%; }
+  .tpin b { font-size: 12px; padding: 3px 10px; }
+  .tlight { padding: 12px; }
+  .tlight figcaption b { font-size: 19px; }
   .kstage .actions, .tstage .actions { gap: 6px; top: auto; bottom: 14px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
   .kstage .actions .act:not(.gold) { font-size: 0; gap: 0; padding: 10px 11px; }
   .kstage .actions .act.gold { white-space: nowrap; padding: 10px 14px; font-size: 13.5px; }
@@ -719,5 +763,6 @@ h1, h2, h3 { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   .wr .an, .it .an, .late .an, .plan.full > .bx > .an, .sweep, .mm-grow .an, .mm-rise .an { animation-duration: 0.01s; }
   .coin { animation-duration: 16s; }
+  .tcard, .tpin, .globe { animation-duration: 0.01s; }
   .chooser, .chooser.open { transition-duration: 0.01s; }
 }

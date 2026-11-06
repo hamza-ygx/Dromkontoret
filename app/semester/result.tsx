@@ -4,9 +4,10 @@ import { kr } from "@/lib/home/price";
 import { TRIP_STYLES, budgetById, budgetText, destById } from "@/lib/semester/catalog";
 import { partyText, standardLabel } from "@/lib/semester/trip";
 import type { Standard, TripPlan } from "@/lib/semester/types";
-import { ItemList, RoomList } from "../designer/lists";
+import { cardsFor } from "@/lib/semester/cards";
+import { Photo } from "./cards";
 
-export type TripTab = "kostnad" | "boende" | "spara";
+export type TripTab = "kostnad" | "upplev" | "spara";
 
 const COLORS: Record<string, string> = { flyg: "var(--ink)", boende: "#2fa6c9", mat: "var(--gold)", aktiviteter: "#ff8a5c", transport: "#9fb3c8", skydd: "#c9ced6" };
 const MONTHS = [3, 6, 12];
@@ -16,21 +17,13 @@ export function TripResult({
   tab,
   onTab,
   onStandard,
-  selItem,
-  selRoom,
-  onSelectItem,
-  onSelectRoom,
-  listRef,
+  onOpen,
 }: {
   plan: TripPlan;
   tab: TripTab;
   onTab: (t: TripTab) => void;
   onStandard: (s: Standard) => void;
-  selItem: string | null;
-  selRoom: string | null;
-  onSelectItem: (id: string | null) => void;
-  onSelectRoom: (id: string | null) => void;
-  listRef: React.RefObject<HTMLDivElement | null>;
+  onOpen: (id: string) => void;
 }) {
   const { config: cfg, trip } = plan;
   const cap = budgetById(cfg.budget).max;
@@ -39,6 +32,9 @@ export function TripResult({
   const people = cfg.party === "2+2" || cfg.party === "4" ? 4 : Number(cfg.party);
   return (
     <>
+      <div className="thero">
+        <Photo id={`hero-${cfg.dest}-${plan.beach ? "beach" : "city"}`} alt={plan.place} eager />
+      </div>
       <div className="head">
         <small>
           {TRIP_STYLES.find((s) => s.id === cfg.style)!.label} · {destById(cfg.dest).label}
@@ -83,15 +79,15 @@ export function TripResult({
         <button className={tab === "kostnad" ? "on" : ""} onClick={() => onTab("kostnad")}>
           Kostnader
         </button>
-        <button className={tab === "boende" ? "on" : ""} onClick={() => onTab("boende")}>
-          Boendet <span>{plan.home.rooms.filter((r) => r.kind !== "hall").length}</span>
+        <button className={tab === "upplev" ? "on" : ""} onClick={() => onTab("upplev")}>
+          Upplev <span>{cardsFor(plan).length}</span>
         </button>
         <button className={tab === "spara" ? "on" : ""} onClick={() => onTab("spara")}>
           Spara
         </button>
       </div>
 
-      <div className="list" ref={listRef}>
+      <div className="list">
         {tab === "kostnad" && (
           <div className="calc">
             <div className="bar3">
@@ -126,18 +122,21 @@ export function TripResult({
             {left < 0 && trip.standard === "budget" && <p className="req warn">Resan ryms inte i budgeten ens på budgetnivå – prova färre nätter, ett närmare resmål eller en större budget.</p>}
           </div>
         )}
-        {tab === "boende" && (
-          <>
-            <RoomList
-              rooms={plan.home.rooms}
-              selected={selRoom}
-              onSelect={(id) => {
-                onSelectItem(null);
-                onSelectRoom(id);
-              }}
-            />
-            <ItemList items={plan.home.items} selected={selItem} onSelect={onSelectItem} />
-          </>
+        {tab === "upplev" && (
+          <ul className="tlist">
+            {cardsFor(plan).map((c) => (
+              <li key={c.id}>
+                <button onClick={() => onOpen(c.id)}>
+                  <Photo id={c.id} alt={c.name} />
+                  <span>
+                    <b>{c.name}</b>
+                    <em>{c.line}</em>
+                  </span>
+                  <strong>{c.price.replace(" per person", "").replace(" tur och retur", "")}</strong>
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
         {tab === "spara" && (
           <div className="save">

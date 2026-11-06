@@ -1,5 +1,3 @@
-import type { Plan } from "../home/types";
-
 export type DestId = "sverige" | "spanien" | "grekland" | "italien" | "portugal" | "kroatien" | "turkiet" | "frankrike" | "thailand" | "usa" | "egypten" | "japan";
 export type BudgetId = "50-100" | "100-250" | "250-500" | "500-1000" | "1000+";
 export type Party = "1" | "2" | "2+2" | "4";
@@ -38,6 +36,5 @@ export interface TripPlan {
   options: Trip[];
   place: string;
   title: string;
-  home: Plan;
   beach: boolean;
 }

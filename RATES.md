@@ -97,3 +97,18 @@ Researched 6 Nov 2026; full tables, about 54 source references and caveats in `d
 | `PARTY`, `KID`, `STANDARD_FACTOR`, `ACTIVITY_PER_DAY`, `EXTRA` (rest) | Room size factor per party, children's share of flight/food/activities, food and activity levels per standard, activities per style | Set for the demo | – | Estimate |
 | `ULTRA` | Flight × 2.5 of lyx, night × 6 of lyx, private transport × 4, food × 3.2 and activities × 3.5 of mellan | Ultralyx = first/business, a staffed villa or palace suite, chauffeur and private guides. Staffed villas on Crete list at €2 600–5 000 per night for 10–12 guests, Mykonos €2 200–8 500 | Villanovo staffed villas – https://www.villanovo.com/villa-rentals/europe/greece/service:house-staff · Isleblue, Montessito – https://isleblue.co/villas/vacation-rentals/greece/mykonos/agia-sophia/villa-montessito | Estimate (anchored) |
 | `JET` | Whole plane, round trip billed for both legs: flight hours per way × 2 × hourly rate × 1.10 (fees) × 11.15 SEK/EUR. Light €2 800/h (≤ 1 h), midsize €5 500/h (≤ 4.5 h), super-mid €9 000/h (≤ 6 h), heavy €15 000/h (long-haul) | European light jets ≈ €2 400–3 500/h; midsize ≈ £4 500/h, super-mid ≈ £8 000/h, heavy £15 000+/h (UK operator); US heavy jets $12 000–25 000/h intercontinental. Hours per way are approximate great-circle flight times from Stockholm | JETVIP pricing FAQ – https://jetvip.com/blog/arenda-chastnogo-samoleta-chasto-zadavaemye-voprosy-ceny-nyuansy-sovety-jetvip/ · Elysium Jet 2026 guide – https://elysiumjet.com/private-jet-charter-cost-2026-pricing-guide/ · Global Charter – https://www.globalcharter.com/post/private-jet-charter-costs | Low-medium (broker blogs) |
+
+### Sights and stays on the photo cards (`lib/semester/spots.ts`)
+
+Each place has four sights with a cirkapris per adult (0 = free). Prices were checked on 6 Nov 2026 against 2025–2026 ticket and tour prices; the full table with source links and confidence per row is in `docs/research/semester-sights-2026.md`. All figures came from search extracts; official sites could not be opened from the sandbox.
+
+- Summer/high-season adult prices, converted at EUR 11.15, USD 9.96, THB 0.296, JPY 0.063, TRY 0.201, EGP 0.183 SEK.
+- Tours (boat trips, food walks, safaris, day trips) use a typical mid-range bookable tour price per adult, e.g. Plitvice as a guided day trip incl. park entry (1 230 kr), Capri as a shared boat tour (1 450 kr).
+- Notable 2026 changes: Trevi Fountain basin fee €2 since 2 Feb 2026; Grand Egyptian Museum EGP 1 830 from 1 Nov 2026; Vasa museum 240 kr in summer.
+- Three sights were swapped after the price check because no usable free photos existed: Gotlands museum → Visby domkyrka (free), Coves del Drach → Cap de Formentor (free viewpoint), Musée Matisse → Cours Saleya market (free).
+- Sight prices are shown for information and are not added to the trip total; activities in the cost panel come from `ACTIVITY_PER_DAY`.
+- Stay cards show the trip's own price per night for the chosen level; they are generic photos of that type of stay, not named hotels.
+
+### Photos (`public/photos`, credits in `lib/semester/photos.json`)
+
+Photos are Creative Commons or public-domain images found through Openverse (https://openverse.org) and shipped inside the app (no third-party requests at runtime). Only CC BY, CC BY-SA, CC0 and public-domain images are used; each one is cropped to 1024 × 650 and credited with photographer, license and source link in the large view.

@@ -1,8 +1,5 @@
-import { generate } from "../home/layout";
-import type { Config } from "../home/types";
 import { STANDARD_LABEL, TRIP_STYLES, budgetById, destById } from "./catalog";
 import { ACTIVITY_PER_DAY, DEST_RATES, EXTRA, JET, KID, PARTY, STANDARD_FACTOR, ULTRA } from "./rates";
-import { toStay } from "./stay";
 import type { CostLine, Standard, Trip, TripConfig, TripPlan } from "./types";
 
 const STANDARDS: Standard[] = ["budget", "mellan", "lyx", "ultra", "jet"];
@@ -59,16 +56,6 @@ export function tripCost(cfg: TripConfig, s: Standard): Trip {
   return { standard: s, lines, total, fits: total <= budgetById(cfg.budget).max };
 }
 
-function homeConfig(cfg: TripConfig, s: Standard, beach: boolean): Config {
-  const kids = PARTY[cfg.party].kids > 0;
-  const big = cfg.party === "2+2" || cfg.party === "4";
-  if (s === "budget") return { type: "lagenhet", rooms: big ? 2 : 1, vibe: "ungdom", area: "stockholm", extras: ["balkong"] };
-  if (s === "mellan") return { type: "lagenhet", rooms: big ? 3 : 2, vibe: kids ? "familj" : "skandi", area: "stockholm", extras: ["balkong"] };
-  if (s === "lyx") return { type: beach ? "villa" : "lagenhet", rooms: big ? 4 : 3, vibe: kids ? "familj" : "lyx", area: "stockholm", extras: ["balkong", "pool"] };
-  return { type: beach ? "villa" : "lagenhet", rooms: 5, vibe: "lyx", area: "stockholm", extras: ["balkong", "pool", "bastu"] };
-}
-
-
 export function planTrip(cfg: TripConfig, pick?: Standard): TripPlan {
   const options = STANDARDS.map((s) => tripCost(cfg, s));
   const best = [...options].reverse().find((t) => t.fits) ?? options[0];
@@ -76,10 +63,9 @@ export function planTrip(cfg: TripConfig, pick?: Standard): TripPlan {
   const d = destById(cfg.dest);
   const beach = TRIP_STYLES.find((t) => t.id === cfg.style)!.beach;
   const spot = beach ? d.beach : d.city;
-  const hc = homeConfig(cfg, trip.standard, beach);
-  const home = toStay(generate(hc), beach);
-  const accom = trip.standard === "budget" ? (hc.rooms === 1 ? "Studio" : "Enkel lägenhet") : trip.standard === "mellan" ? "Lägenhet" : trip.standard === "lyx" ? (beach ? "Villa med pool" : "Takvåning") : beach ? "Privat villa med personal" : "Penthouse-svit";
-  return { config: cfg, trip, options, place: spot.name, title: `${accom} ${spot.prep} ${spot.name}`, home, beach };
+  const big = cfg.party === "2+2" || cfg.party === "4";
+  const accom = trip.standard === "budget" ? (big ? "Enkel lägenhet" : "Studio") : trip.standard === "mellan" ? "Lägenhet" : trip.standard === "lyx" ? (beach ? "Villa med pool" : "Takvåning") : beach ? "Privat villa med personal" : "Penthouse-svit";
+  return { config: cfg, trip, options, place: spot.name, title: `${accom} ${spot.prep} ${spot.name}`, beach };
 }
 
 export const bestStandard = (cfg: TripConfig) => {

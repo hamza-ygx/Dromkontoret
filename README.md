@@ -5,7 +5,7 @@ Stage demos for Revisionskonsulterna J Hägglund, shown on a big screen at the c
 - **Drömboendet** (`/`): pick a home type, number of rooms, style, kommun and extras, and watch the home build in 3D in about 5 seconds, with an estimated price, monthly cost and a shopping list.
 - **Drömkontoret** (`/kontor`): pick an industry, number of employees, style, kommun and extras, and watch the company's premises build in 3D with every desk, table, shelf, lift and van priced. The result panel shows rent, personnel cost, monthly cost and break-even; "Vart tar pengarna vägen?" zooms out to a money machine that shows where each 100 kronor of revenue goes.
 
-- **Drömsemestern** (`/semester`, v1): pick a destination, budget range (50 tkr to 1 Mkr+), travellers, nights, type of trip and extras, and see the stay build in 3D (beach or city) with the trip's cost, the best standard that fits the budget and a savings plan.
+- **Drömsemestern** (`/semester`): pick a destination, budget range (50 tkr to 1 Mkr+), travellers, nights, type of trip and extras; a plane flies from Stockholm across a globe, zooms in on the place and fans out photo cards of the stay and the sights, next to the trip's cost, the best level that fits the budget and a savings plan.
 
 Switch between the apps with the toggle in the top bar; each keeps its own state.
 
@@ -40,7 +40,8 @@ The passcode gate is enforced server-side in `proxy.ts` for every page and API r
 | `app/(apps)/layout.tsx`, `app/apps.tsx`, `app/switch.tsx` | Keeps both apps mounted; top-bar toggle (`history.pushState`, works offline) |
 | `app/designer/` | Drömboendet UI and the shared CSS-3D `Scene`, lists, place search |
 | `app/office/` | Drömkontoret UI: chooser, result panel, Kalkyl tab, money machine |
-| `app/semester/`, `lib/semester/` | Drömsemestern: chooser, result panel; destinations, price data (`rates.ts`), trip cost and standard pick (`trip.ts`), beach/city stay built on the home generator (`stay.ts`) |
+| `app/semester/`, `lib/semester/` | Drömsemestern: chooser, globe (`globe.tsx`), photo cards and large view (`cards.tsx`), result panel; destinations, price data (`rates.ts`), trip cost and level pick (`trip.ts`), places and sights (`spots.ts`), photo credits (`photos.json`) |
+| `public/photos/` | Bundled CC/public-domain photos for Drömsemestern |
 | `lib/home/` | Home generator, catalogue, 290 kommuner (`places.ts`), price |
 | `lib/office/` | Office generator: room programmes per industry, layout, furnishing, site, equipment catalogue, palettes |
 | `lib/office/rates.ts` + `RATES.md` | Every adjustable figure (space, salaries, fees, rents, revenue presets, tax), with sources |
