@@ -1,7 +1,6 @@
 "use client";
 
-import { kr } from "@/lib/home/price";
-import { BUDGETS, DESTS, NIGHTS, PARTIES, TRIP_ADDONS, TRIP_STYLES, destById } from "@/lib/semester/catalog";
+import { BUDGETS, DESTS, NIGHTS, PARTIES, TRIP_ADDONS, TRIP_STYLES, budgetText, destById } from "@/lib/semester/catalog";
 import { partyText, spotRates } from "@/lib/semester/trip";
 import type { TripAddon, TripConfig } from "@/lib/semester/types";
 
@@ -61,7 +60,7 @@ export function TripChooser({
             {BUDGETS.map((b) => (
               <button key={b.id} className={cfg.budget === b.id ? "on" : ""} onClick={() => onChange({ budget: b.id })}>
                 <b>{b.label}</b>
-                <small>kr</small>
+                <small>tkr</small>
               </button>
             ))}
           </div>
@@ -138,7 +137,7 @@ export function TripChooser({
               {spot.name} · {cfg.nights} nätter
             </b>
             <span>
-              {partyText(cfg)} · budget {kr(cfg.budget)}
+              {partyText(cfg)} · budget {budgetText(cfg.budget)}
             </span>
           </p>
           {canReturn && (

@@ -1,8 +1,8 @@
-import type { DestId, Standard, TripStyle } from "./types";
+import type { BaseStandard, DestId, Standard, TripStyle } from "./types";
 
 export interface SpotRates {
-  flight: Record<Standard, number>;
-  night: Record<Standard, number>;
+  flight: Record<BaseStandard, number>;
+  night: Record<BaseStandard, number>;
   food: number;
   index: number;
   car: number;
@@ -69,10 +69,26 @@ export const PARTY = {
 
 export const KID = { flight: 0.8, food: 0.6, activities: 0.5 };
 
+export const ULTRA = { flight: 2.5, night: 6, transport: 4, allInclusive: 2.5 };
+
+export const JET = {
+  hours: { sverige: 0.7, kroatien: 2.6, frankrike: 2.7, italien: 3, spanien: 3.4, turkiet: 3.6, grekland: 3.7, portugal: 4.3, egypten: 5.1, usa: 10, thailand: 11, japan: 12 } satisfies Record<DestId, number>,
+  eurPerHour: [
+    [1, 2_800],
+    [4.5, 5_500],
+    [6, 9_000],
+    [Infinity, 15_000],
+  ] as const,
+  fees: 0.1,
+  sekPerEur: 11.15,
+};
+
 export const STANDARD_FACTOR: Record<Standard, { food: number; activities: number }> = {
   budget: { food: 0.65, activities: 0.7 },
   mellan: { food: 1, activities: 1 },
   lyx: { food: 1.8, activities: 1.6 },
+  ultra: { food: 3.2, activities: 3.5 },
+  jet: { food: 3.2, activities: 3.5 },
 };
 
 export const ACTIVITY_PER_DAY: Record<TripStyle, number> = { sol: 120, stad: 350, aventyr: 500, kultur: 300 };

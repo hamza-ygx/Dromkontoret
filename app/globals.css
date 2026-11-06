@@ -622,7 +622,7 @@ h1, h2, h3 { margin: 0; }
 .facts .pos b { color: #2f8f5b; }
 .facts .neg b { color: var(--danger); }
 .stds { display: flex; gap: 4px; margin: 14px 22px 0; padding: 3px; border-radius: 11px; background: var(--surface-2); border: 1px solid var(--line); }
-.stds button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 4px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-weight: 600; font-size: 13px; line-height: 1.15; }
+.stds button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 2px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-weight: 600; font-size: 12.5px; line-height: 1.15; white-space: nowrap; }
 .stds button small { font-size: 10.5px; font-weight: 500; color: #2f8f5b; }
 .stds button.no small { color: var(--danger); }
 .stds button.on { background: linear-gradient(180deg, var(--gold-hi), var(--gold)); color: var(--ink); box-shadow: 0 1px 3px rgba(20, 33, 58, 0.15); }
@@ -677,6 +677,8 @@ h1, h2, h3 { margin: 0; }
   .appswitch .sm { display: inline; }
   .dests { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .semester .s-extras .extras { grid-template-columns: 1fr 1fr; }
+  .semester .s-budget .seg { grid-template-columns: repeat(3, 1fr); }
+  .semester .s-budget .seg b { font-size: 18px; }
   .mark { padding-right: 12px; }
   .body { display: flex; flex-direction: column; flex: 1; }
   .chooser { position: fixed; top: 57px; }

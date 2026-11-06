@@ -1,4 +1,4 @@
-import type { Budget, DestId, Nights, Party, TripAddon, TripStyle } from "./types";
+import type { BudgetId, DestId, Nights, Party, TripAddon, TripStyle } from "./types";
 
 interface Spot {
   name: string;
@@ -22,13 +22,16 @@ export const DESTS: { id: DestId; label: string; code: string; beach: Spot; city
 
 export const destById = (id: DestId) => DESTS.find((d) => d.id === id)!;
 
-export const BUDGETS: { id: Budget; label: string }[] = [
-  { id: 15_000, label: "15 000" },
-  { id: 30_000, label: "30 000" },
-  { id: 50_000, label: "50 000" },
-  { id: 80_000, label: "80 000" },
-  { id: 150_000, label: "150 000" },
+export const BUDGETS: { id: BudgetId; label: string; min: number; max: number }[] = [
+  { id: "50-100", label: "50–100", min: 50_000, max: 100_000 },
+  { id: "100-250", label: "100–250", min: 100_000, max: 250_000 },
+  { id: "250-500", label: "250–500", min: 250_000, max: 500_000 },
+  { id: "500-1000", label: "500–1 000", min: 500_000, max: 1_000_000 },
+  { id: "1000+", label: "1 000 +", min: 1_000_000, max: Infinity },
 ];
+
+export const budgetById = (id: BudgetId) => BUDGETS.find((b) => b.id === id)!;
+export const budgetText = (id: BudgetId) => (id === "1000+" ? "över 1 Mkr" : `${budgetById(id).label} tkr`);
 
 export const PARTIES: { id: Party; label: string; hint: string }[] = [
   { id: "1", label: "1", hint: "vuxen" },
@@ -58,4 +61,4 @@ export const TRIP_ADDONS: { id: TripAddon; label: string }[] = [
   { id: "skydd", label: "Avbeställningsskydd" },
 ];
 
-export const STANDARD_LABEL = { budget: "Budget", mellan: "Mellan", lyx: "Lyx" } as const;
+export const STANDARD_LABEL = { budget: "Budget", mellan: "Mellan", lyx: "Lyx", ultra: "Ultralyx", jet: "Privatjet" } as const;

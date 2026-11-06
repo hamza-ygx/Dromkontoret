@@ -1,7 +1,7 @@
 "use client";
 
 import { kr } from "@/lib/home/price";
-import { TRIP_STYLES, destById } from "@/lib/semester/catalog";
+import { TRIP_STYLES, budgetById, budgetText, destById } from "@/lib/semester/catalog";
 import { partyText, standardLabel } from "@/lib/semester/trip";
 import type { Standard, TripPlan } from "@/lib/semester/types";
 import { ItemList, RoomList } from "../designer/lists";
@@ -33,7 +33,9 @@ export function TripResult({
   listRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const { config: cfg, trip } = plan;
-  const left = cfg.budget - trip.total;
+  const cap = budgetById(cfg.budget).max;
+  const left = cap - trip.total;
+  const open = !Number.isFinite(cap);
   const people = cfg.party === "2+2" || cfg.party === "4" ? 4 : Number(cfg.party);
   return (
     <>
@@ -47,7 +49,7 @@ export function TripResult({
         <small>Resans kostnad</small>
         <strong>{kr(trip.total)}</strong>
         <div className="budgetbar" aria-hidden>
-          <i className={left < 0 ? "over" : ""} style={{ width: `${Math.min(100, (trip.total / cfg.budget) * 100)}%` }} />
+          <i className={left < 0 ? "over" : ""} style={{ width: `${open ? 100 : Math.min(100, (trip.total / cap) * 100)}%` }} />
         </div>
         <div className="facts">
           <span>
@@ -59,8 +61,8 @@ export function TripResult({
             per person och dag
           </span>
           <span className={left < 0 ? "neg" : "pos"}>
-            <b>{kr(Math.abs(left))}</b>
-            {left < 0 ? "över budget" : "kvar av budgeten"}
+            <b>{open ? "✓" : kr(Math.abs(left))}</b>
+            {open ? "inom budget" : left < 0 ? "över budgettaket" : "kvar till budgettaket"}
           </span>
         </div>
       </div>
@@ -71,7 +73,7 @@ export function TripResult({
             {standardLabel(o.standard)}
             <small>
               {o.fits ? "✓ " : ""}
-              {Math.round(o.total / 1000)} tkr
+              {o.total >= 1e6 ? `${(o.total / 1e6).toFixed(1).replace(".", ",")} Mkr` : `${Math.round(o.total / 1000)} tkr`}
             </small>
           </button>
         ))}
@@ -113,11 +115,15 @@ export function TripResult({
               <dt className="sum">Totalt</dt>
               <dd className="sum">{kr(trip.total)}</dd>
               <dt>Din budget</dt>
-              <dd>{kr(cfg.budget)}</dd>
-              <dt className="sum">{left < 0 ? "Saknas" : "Kvar"}</dt>
-              <dd className={`sum ${left < 0 ? "neg" : "pos"}`}>{kr(Math.abs(left))}</dd>
+              <dd>{budgetText(cfg.budget)}</dd>
+              {!open && (
+                <>
+                  <dt className="sum">{left < 0 ? "Över budgettaket" : "Kvar till budgettaket"}</dt>
+                  <dd className={`sum ${left < 0 ? "neg" : "pos"}`}>{kr(Math.abs(left))}</dd>
+                </>
+              )}
             </dl>
-            {left < 0 && <p className="req warn">Resan ryms inte i budgeten ens på budgetnivå – prova färre nätter, ett närmare resmål eller en större budget.</p>}
+            {left < 0 && trip.standard === "budget" && <p className="req warn">Resan ryms inte i budgeten ens på budgetnivå – prova färre nätter, ett närmare resmål eller en större budget.</p>}
           </div>
         )}
         {tab === "boende" && (

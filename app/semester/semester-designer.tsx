@@ -11,7 +11,7 @@ import { AppSwitch } from "../switch";
 import { TripChooser } from "./chooser";
 import { TripResult, type TripTab } from "./result";
 
-const START: TripConfig = { dest: "grekland", budget: 50_000, party: "2", nights: 7, style: "sol", addons: [] };
+const START: TripConfig = { dest: "grekland", budget: "100-250", party: "2", nights: 7, style: "sol", addons: [] };
 
 export function TripDesigner({ version, visible }: { version: string; visible: boolean }) {
   const [cfg, setCfg] = useState<TripConfig>(START);
