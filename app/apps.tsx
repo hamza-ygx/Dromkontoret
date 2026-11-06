@@ -4,11 +4,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Designer } from "./designer/designer";
 import { OfficeDesigner } from "./office/office-designer";
+import { TripDesigner } from "./semester/semester-designer";
 import { APPS, appFor } from "./switch";
 
 export function Apps({ version }: { version: string }) {
   const current = appFor(usePathname());
-  const [seen, setSeen] = useState({ hem: current === "hem", kontor: current === "kontor" });
+  const [seen, setSeen] = useState({ hem: current === "hem", kontor: current === "kontor", semester: current === "semester" });
 
   useEffect(() => {
     setSeen((s) => (s[current] ? s : { ...s, [current]: true }));
@@ -22,6 +23,9 @@ export function Apps({ version }: { version: string }) {
       </div>
       <div className="appwrap" hidden={current !== "kontor"}>
         {seen.kontor && <OfficeDesigner version={version} visible={current === "kontor"} />}
+      </div>
+      <div className="appwrap" hidden={current !== "semester"}>
+        {seen.semester && <TripDesigner version={version} visible={current === "semester"} />}
       </div>
     </>
   );

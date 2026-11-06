@@ -598,8 +598,53 @@ h1, h2, h3 { margin: 0; }
 .mm-legend button.on { border-color: var(--gold); background: var(--gold-soft); box-shadow: 0 0 0 1px var(--gold) inset; }
 .mm .fine { padding: 0; text-align: center; }
 
+/* ---------- drömsemestern ---------- */
+.appswitch .sm { display: none; }
+.semester .s-budget, .semester .s-party { grid-column: span 6; }
+.semester .s-nights { grid-column: span 4; }
+.semester .s-style { grid-column: span 8; }
+.semester .s-extras { grid-column: span 12; }
+.semester .s-extras .extras { grid-template-columns: repeat(4, 1fr); }
+.seg.four { grid-template-columns: repeat(4, 1fr); }
+.semester .seg b { font-size: 22px; white-space: nowrap; }
+.dests { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.dest { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; text-align: left; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); transition: border-color 0.15s, background 0.15s, transform 0.1s; }
+.dest .stamp { grid-row: span 2; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color: #fff; font: 700 12px var(--font-mono), monospace; letter-spacing: 0.04em; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35); }
+.dest b { font-size: 15px; font-weight: 600; color: var(--ink); }
+.dest small { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dest:hover { border-color: var(--line-strong); }
+.dest:active { transform: scale(0.98); }
+.dest.on { border-color: var(--gold); background: var(--gold-soft); box-shadow: 0 0 0 1px var(--gold) inset, var(--shadow); }
+.budgetbar { height: 8px; margin-top: 10px; border-radius: 99px; background: rgba(20, 33, 58, 0.08); overflow: hidden; }
+.budgetbar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #2f8f5b, #49b07a); animation: barin 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.budgetbar i.over { background: linear-gradient(90deg, #d9534f, var(--danger)); }
+@keyframes barin { from { width: 0; } }
+.facts .pos b { color: #2f8f5b; }
+.facts .neg b { color: var(--danger); }
+.stds { display: flex; gap: 4px; margin: 14px 22px 0; padding: 3px; border-radius: 11px; background: var(--surface-2); border: 1px solid var(--line); }
+.stds button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 4px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-weight: 600; font-size: 13px; line-height: 1.15; }
+.stds button small { font-size: 10.5px; font-weight: 500; color: #2f8f5b; }
+.stds button.no small { color: var(--danger); }
+.stds button.on { background: linear-gradient(180deg, var(--gold-hi), var(--gold)); color: var(--ink); box-shadow: 0 1px 3px rgba(20, 33, 58, 0.15); }
+.stds button.on small { color: rgba(20, 33, 58, 0.75); }
+.rows dt .lt { display: flex; flex-direction: column; }
+.rows dt .lt small { font-size: 11.5px; color: var(--dim); }
+.rows dt i { flex: none; align-self: flex-start; margin-top: 4px; }
+.rows dd.pos { color: #2f8f5b; }
+.save { padding: 6px 8px; font-size: 13px; color: var(--muted); }
+.save p { margin: 0 0 10px; line-height: 1.4; }
+.save ul { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.save li { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); }
+.save li span { display: flex; flex-direction: column; color: var(--ink); font-weight: 600; }
+.save li small { font-size: 11.5px; font-weight: 500; color: var(--dim); }
+.save li b { display: flex; flex-direction: column; align-items: flex-end; font-family: var(--font-display), serif; font-size: 21px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.save li b small { font-family: var(--font-sans), system-ui, sans-serif; }
+.save .tip { padding: 10px 12px; border-radius: 10px; background: var(--gold-soft); border: 1px solid var(--gold-line); color: var(--gold-ink); font-size: 12.5px; }
+
 /* ---------- smaller screens ---------- */
 @media (max-height: 820px) and (min-width: 761px) {
+  .dest { padding: 8px 10px; }
+  .dest .stamp { width: 28px; height: 28px; }
   .chooser .inner { padding-top: 16px; gap: 14px 24px; }
   .intro h2 { font-size: 28px; }
   .blk h3 { margin-bottom: 8px; }
@@ -617,6 +662,8 @@ h1, h2, h3 { margin: 0; }
 }
 @media (max-width: 1100px) {
   .chooser .inner { padding: 22px 24px 26px; gap: 20px; }
+  .dests { grid-template-columns: repeat(4, 1fr); }
+  .semester .s-budget, .semester .s-party, .semester .s-nights, .semester .s-style { grid-column: span 12; }
   .b-rooms, .b-vibe, .b-area, .b-extras { grid-column: span 12; }
   .body { grid-template-columns: minmax(0, 1fr) 320px; }
 }
@@ -625,7 +672,11 @@ h1, h2, h3 { margin: 0; }
   .app { height: auto; min-height: 100dvh; display: flex; flex-direction: column; }
   .topbar { padding: 10px 16px; gap: 12px; height: auto; }
   .mark .firm, .brand p, .ver, .brand { display: none; }
-  .appswitch a { padding: 7px 11px; font-size: 12.5px; }
+  .appswitch a { padding: 7px 10px; font-size: 12.5px; }
+  .appswitch .lg { display: none; }
+  .appswitch .sm { display: inline; }
+  .dests { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .semester .s-extras .extras { grid-template-columns: 1fr 1fr; }
   .mark { padding-right: 12px; }
   .body { display: flex; flex-direction: column; flex: 1; }
   .chooser { position: fixed; top: 57px; }
@@ -637,7 +688,7 @@ h1, h2, h3 { margin: 0; }
   .stage { height: 62vh; min-height: 380px; flex: none; }
   .stage .hint { display: none; }
   .result { border-left: 0; border-top: 1px solid var(--line); }
-  .kstage .actions { gap: 6px; top: auto; bottom: 14px; left: 50%; transform: translateX(-50%); }
+  .kstage .actions, .tstage .actions { gap: 6px; top: auto; bottom: 14px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
   .kstage .actions .act:not(.gold) { font-size: 0; gap: 0; padding: 10px 11px; }
   .kstage .actions .act.gold { white-space: nowrap; padding: 10px 14px; font-size: 13.5px; }
   .mm-head { flex-wrap: wrap; gap: 10px; padding: 12px 12px 0; }
