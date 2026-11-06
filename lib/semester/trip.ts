@@ -14,8 +14,11 @@ export const partyText = (cfg: TripConfig) => {
   return `${p.adults} ${p.adults === 1 ? "vuxen" : "vuxna"}${p.kids ? ` + ${p.kids} barn` : ""}`;
 };
 
+export const spotRates = (cfg: TripConfig) => DEST_RATES[cfg.dest][TRIP_STYLES.find((t) => t.id === cfg.style)!.beach ? "beach" : "city"];
+
 export function tripCost(cfg: TripConfig, s: Standard): Trip {
-  const r = DEST_RATES[cfg.dest];
+  const r = spotRates(cfg);
+  const index = Math.max(EXTRA.indexFloor, r.index);
   const p = PARTY[cfg.party];
   const nights = cfg.nights;
   const has = (a: TripConfig["addons"][number]) => cfg.addons.includes(a);
@@ -29,8 +32,8 @@ export function tripCost(cfg: TripConfig, s: Standard): Trip {
   const foodDay = r.food * STANDARD_FACTOR[s].food * eaters;
   const food = round(allInc ? foodDay * nights * EXTRA.allInclusiveFoodLeft + r.allInclusive! * (p.adults + p.kids * EXTRA.allInclusiveKid) * nights * (s === "lyx" ? 1.5 : 1) : foodDay * nights);
   const trips = has("utflykt") ? Math.ceil(nights / EXTRA.excursionEveryNights) : 0;
-  const fun = round(ACTIVITY_PER_DAY[cfg.style] * r.index * STANDARD_FACTOR[s].activities * doers * nights + trips * EXTRA.excursion * r.index * doers);
-  const moving = round(has("bil") ? (r.car + EXTRA.fuelPerDay) * nights : EXTRA.transportPerDay * r.index * nights * (p.adults + p.kids > 2 ? 1.5 : 1));
+  const fun = round(ACTIVITY_PER_DAY[cfg.style] * index * STANDARD_FACTOR[s].activities * doers * nights + trips * EXTRA.excursion * index * doers);
+  const moving = round(has("bil") ? (r.car + EXTRA.fuelPerDay) * nights : EXTRA.transportPerDay * index * nights * (p.adults + p.kids > 2 ? 1.5 : 1));
   const cover = has("skydd") ? round((flight + stay) * EXTRA.cancellationShare) : 0;
 
   const lines: CostLine[] = [

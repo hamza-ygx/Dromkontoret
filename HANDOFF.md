@@ -88,7 +88,7 @@ Second app next to Drömboendet for RKJH's client event on 15 November 2026.
 - Chooser (clicks only): 12 destinations (each with a beach and a city place), budget 15–150 tkr for the whole trip, travellers (1, 2, 2+2, 4), nights (4/7/10/14), type of trip (sol, storstad, äventyr, mat & kultur), extras (hyrbil, allt inkluderat where common, guidade utflykter, avbeställningsskydd).
 - `lib/semester/trip.ts` prices the trip at budget / mellan / lyx (flight, boende, mat, aktiviteter, transport, avbeställningsskydd) and picks the best standard within the budget; the result panel lets guests switch standard and shows kvar/över budget and a savings plan (3/6/12 months).
 - The stay reuses the Drömboendet generator (studio / lägenhet / villa med pool or takvåning) and `stay.ts` turns its site into a beach (sand, sea, palms, sunbeds) or a city block. Furniture shows as "Ingår".
-- Prices in `lib/semester/rates.ts` are v1 estimates; a sourced research pass goes to `docs/research/semester-2026.md` and then into `rates.ts` and `RATES.md`.
+- Prices in `lib/semester/rates.ts` are per place (beach and city), researched 6 Nov 2026 from search extracts (`docs/research/semester-2026.md`, sources in `RATES.md`); all-inclusive extras and the demo factors are estimates.
 
 ## Event checklist
 

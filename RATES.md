@@ -79,3 +79,19 @@ Calibration target: at "normal" the example company makes a modest profit in lin
 - Kostnad per månad = lokalhyra + personalkostnad + avskrivning + övriga.
 - Break-even omsättning = kostnad per månad ÷ (1 − varuinköpsandel).
 - Money machine: every flow divided by the month's revenue × 100, rounded to whole kronor that sum to 100. Löner includes pension and semestertillägg. When costs exceed revenue the last tank shows what is missing ("Saknas").
+
+## Drömsemestern (`lib/semester/rates.ts`)
+
+Researched 6 Nov 2026; full tables, about 54 source references and caveats in `docs/research/semester-2026.md`. Every figure came from search-result extracts (source pages could not be opened from the sandbox), so treat them as indicative 2026 high-season levels in SEK.
+
+| Key | Value | Basis | Source | Confidence |
+| --- | --- | --- | --- | --- |
+| `DEST_RATES[*].flight` | Round trip per adult from Arlanda/Landvetter, budget / mellan / lyx, per place | Budget = low end and mellan = middle of momondo's typical price range per route; lyx ≈ 3 × mellan in Europe (one SAS business data point), ≈ 2.2 × long-haul (premium economy) | momondo route pages (see research notes) | Medium (budget/mellan), estimate (lyx) |
+| `DEST_RATES[*].night` | Per night for 2 adults sharing, budget (2★/simple) / mellan (3–4★) / lyx (5★ or villa) | momondo average price per star class, checked against CoStar ADR (US), Phuket market averages and HotelBank (Tokyo); obviously wrong extracts replaced by estimates | Research notes | Medium |
+| `DEST_RATES[*].food` | Per adult per day eating out, mellan | Sweden ≈ 600–650 kr; other places ≈ 600 × price index plus a tourist-area markup | Eurostat price level indices for restaurants and hotels 2025; GlobalCostData outside the EU | Estimate |
+| `DEST_RATES[*].index` | Price level vs Sweden (restaurants and hotels) | Eurostat 2025 PLI ÷ Sweden 124 (e.g. Greece 86.1 → 0.69, France 116 → 0.94); US, Japan, Thailand, Egypt from GlobalCostData | Research notes | Medium (EU) / low (non-EU) |
+| `EXTRA.indexFloor` | 0.35 | Activities and local transport never priced below 35 % of Swedish levels (tourist prices); stops Egypt's 0.20 making trips nearly free | – | Estimate |
+| `DEST_RATES[*].car` | Economy car per day | Rental price searches per place; city places reuse the country's figure; Egypt is an estimate | Research notes | Medium-low |
+| `DEST_RATES[*].allInclusive` | Extra per adult per night vs room only (Spanien, Grekland, Turkiet, Egypten, Thailand beach places only) | No 2026 Ving/TUI/Apollo price lists found | – | Estimate |
+| `EXTRA.cancellationShare` | 5 % of flight + boende | Market average 3–6 % | HelloSafe (via research notes) | Medium |
+| `PARTY`, `KID`, `STANDARD_FACTOR`, `ACTIVITY_PER_DAY`, `EXTRA` (rest) | Room size factor per party, children's share of flight/food/activities, food and activity levels per standard, activities per style | Set for the demo | – | Estimate |

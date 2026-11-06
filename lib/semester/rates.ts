@@ -1,6 +1,6 @@
 import type { DestId, Standard, TripStyle } from "./types";
 
-export interface DestRates {
+export interface SpotRates {
   flight: Record<Standard, number>;
   night: Record<Standard, number>;
   food: number;
@@ -9,19 +9,55 @@ export interface DestRates {
   allInclusive: number | null;
 }
 
-export const DEST_RATES: Record<DestId, DestRates> = {
-  sverige: { flight: { budget: 900, mellan: 1_400, lyx: 2_600 }, night: { budget: 1_100, mellan: 1_900, lyx: 4_500 }, food: 550, index: 1, car: 600, allInclusive: null },
-  spanien: { flight: { budget: 2_200, mellan: 3_500, lyx: 9_000 }, night: { budget: 900, mellan: 1_700, lyx: 4_800 }, food: 400, index: 0.8, car: 350, allInclusive: 450 },
-  grekland: { flight: { budget: 2_600, mellan: 4_000, lyx: 9_500 }, night: { budget: 800, mellan: 1_500, lyx: 4_500 }, food: 380, index: 0.75, car: 400, allInclusive: 450 },
-  italien: { flight: { budget: 2_200, mellan: 3_500, lyx: 9_000 }, night: { budget: 1_100, mellan: 2_000, lyx: 6_000 }, food: 450, index: 0.9, car: 450, allInclusive: null },
-  portugal: { flight: { budget: 2_600, mellan: 4_000, lyx: 10_000 }, night: { budget: 800, mellan: 1_500, lyx: 4_200 }, food: 350, index: 0.7, car: 350, allInclusive: null },
-  kroatien: { flight: { budget: 2_400, mellan: 3_800, lyx: 9_000 }, night: { budget: 900, mellan: 1_700, lyx: 5_000 }, food: 400, index: 0.8, car: 450, allInclusive: null },
-  turkiet: { flight: { budget: 2_800, mellan: 4_200, lyx: 10_000 }, night: { budget: 600, mellan: 1_200, lyx: 3_800 }, food: 280, index: 0.55, car: 350, allInclusive: 350 },
-  frankrike: { flight: { budget: 1_800, mellan: 3_200, lyx: 8_500 }, night: { budget: 1_200, mellan: 2_300, lyx: 7_000 }, food: 500, index: 1, car: 500, allInclusive: null },
-  thailand: { flight: { budget: 6_500, mellan: 9_000, lyx: 28_000 }, night: { budget: 400, mellan: 1_000, lyx: 3_500 }, food: 250, index: 0.5, car: 350, allInclusive: 500 },
-  usa: { flight: { budget: 5_500, mellan: 8_000, lyx: 26_000 }, night: { budget: 1_300, mellan: 2_400, lyx: 6_500 }, food: 650, index: 1.25, car: 600, allInclusive: null },
-  egypten: { flight: { budget: 3_500, mellan: 5_000, lyx: 12_000 }, night: { budget: 500, mellan: 1_000, lyx: 3_200 }, food: 220, index: 0.45, car: 500, allInclusive: 300 },
-  japan: { flight: { budget: 8_000, mellan: 11_000, lyx: 35_000 }, night: { budget: 900, mellan: 1_800, lyx: 6_000 }, food: 400, index: 0.9, car: 550, allInclusive: null },
+export const DEST_RATES: Record<DestId, { beach: SpotRates; city: SpotRates }> = {
+  sverige: {
+    beach: { flight: { budget: 600, mellan: 1_400, lyx: 2_800 }, night: { budget: 1_100, mellan: 2_300, lyx: 4_500 }, food: 600, index: 1.0, car: 550, allInclusive: null },
+    city: { flight: { budget: 500, mellan: 1_200, lyx: 2_000 }, night: { budget: 900, mellan: 1_900, lyx: 4_000 }, food: 650, index: 1.0, car: 550, allInclusive: null },
+  },
+  spanien: {
+    beach: { flight: { budget: 1_500, mellan: 2_800, lyx: 8_000 }, night: { budget: 1_400, mellan: 2_300, lyx: 5_000 }, food: 425, index: 0.69, car: 250, allInclusive: 450 },
+    city: { flight: { budget: 1_800, mellan: 2_900, lyx: 8_500 }, night: { budget: 1_400, mellan: 2_400, lyx: 4_500 }, food: 450, index: 0.69, car: 250, allInclusive: null },
+  },
+  grekland: {
+    beach: { flight: { budget: 1_700, mellan: 3_800, lyx: 11_000 }, night: { budget: 900, mellan: 1_600, lyx: 3_500 }, food: 400, index: 0.69, car: 300, allInclusive: 400 },
+    city: { flight: { budget: 1_700, mellan: 3_500, lyx: 10_000 }, night: { budget: 800, mellan: 1_500, lyx: 3_000 }, food: 425, index: 0.69, car: 300, allInclusive: null },
+  },
+  italien: {
+    beach: { flight: { budget: 2_000, mellan: 3_500, lyx: 10_000 }, night: { budget: 1_900, mellan: 3_000, lyx: 9_000 }, food: 600, index: 0.89, car: 400, allInclusive: null },
+    city: { flight: { budget: 1_500, mellan: 2_400, lyx: 7_000 }, night: { budget: 1_000, mellan: 2_000, lyx: 5_000 }, food: 550, index: 0.89, car: 400, allInclusive: null },
+  },
+  portugal: {
+    beach: { flight: { budget: 1_800, mellan: 3_500, lyx: 8_000 }, night: { budget: 1_200, mellan: 1_800, lyx: 4_300 }, food: 375, index: 0.59, car: 250, allInclusive: null },
+    city: { flight: { budget: 2_500, mellan: 4_500, lyx: 10_000 }, night: { budget: 800, mellan: 1_500, lyx: 3_000 }, food: 375, index: 0.59, car: 250, allInclusive: null },
+  },
+  kroatien: {
+    beach: { flight: { budget: 1_500, mellan: 2_900, lyx: 8_000 }, night: { budget: 800, mellan: 1_800, lyx: 3_000 }, food: 450, index: 0.72, car: 300, allInclusive: null },
+    city: { flight: { budget: 1_000, mellan: 2_300, lyx: 7_000 }, night: { budget: 1_400, mellan: 2_500, lyx: 5_000 }, food: 500, index: 0.72, car: 300, allInclusive: null },
+  },
+  turkiet: {
+    beach: { flight: { budget: 1_500, mellan: 3_000, lyx: 8_000 }, night: { budget: 600, mellan: 1_200, lyx: 2_500 }, food: 375, index: 0.63, car: 300, allInclusive: 250 },
+    city: { flight: { budget: 1_700, mellan: 3_000, lyx: 8_500 }, night: { budget: 600, mellan: 1_100, lyx: 2_500 }, food: 400, index: 0.63, car: 300, allInclusive: null },
+  },
+  frankrike: {
+    beach: { flight: { budget: 1_600, mellan: 2_900, lyx: 8_500 }, night: { budget: 1_500, mellan: 2_500, lyx: 6_000 }, food: 575, index: 0.94, car: 350, allInclusive: null },
+    city: { flight: { budget: 1_500, mellan: 3_500, lyx: 9_000 }, night: { budget: 1_200, mellan: 2_300, lyx: 7_000 }, food: 625, index: 0.94, car: 350, allInclusive: null },
+  },
+  thailand: {
+    beach: { flight: { budget: 6_000, mellan: 10_000, lyx: 22_000 }, night: { budget: 500, mellan: 1_200, lyx: 3_000 }, food: 275, index: 0.39, car: 300, allInclusive: 500 },
+    city: { flight: { budget: 5_700, mellan: 9_000, lyx: 20_000 }, night: { budget: 450, mellan: 1_000, lyx: 2_200 }, food: 250, index: 0.39, car: 300, allInclusive: null },
+  },
+  usa: {
+    beach: { flight: { budget: 5_000, mellan: 8_500, lyx: 19_000 }, night: { budget: 1_000, mellan: 1_900, lyx: 4_000 }, food: 700, index: 1.17, car: 450, allInclusive: null },
+    city: { flight: { budget: 4_500, mellan: 7_300, lyx: 16_000 }, night: { budget: 1_800, mellan: 3_500, lyx: 7_000 }, food: 800, index: 1.17, car: 450, allInclusive: null },
+  },
+  egypten: {
+    beach: { flight: { budget: 3_300, mellan: 5_300, lyx: 13_000 }, night: { budget: 500, mellan: 900, lyx: 2_000 }, food: 200, index: 0.2, car: 400, allInclusive: 200 },
+    city: { flight: { budget: 4_100, mellan: 5_600, lyx: 14_000 }, night: { budget: 400, mellan: 900, lyx: 1_800 }, food: 175, index: 0.2, car: 400, allInclusive: null },
+  },
+  japan: {
+    beach: { flight: { budget: 7_000, mellan: 10_500, lyx: 23_000 }, night: { budget: 800, mellan: 1_500, lyx: 4_000 }, food: 450, index: 0.77, car: 500, allInclusive: null },
+    city: { flight: { budget: 7_500, mellan: 10_000, lyx: 22_000 }, night: { budget: 900, mellan: 2_000, lyx: 4_500 }, food: 475, index: 0.77, car: 500, allInclusive: null },
+  },
 };
 
 export const PARTY = {
@@ -48,5 +84,6 @@ export const EXTRA = {
   excursionEveryNights: 3,
   allInclusiveFoodLeft: 0.15,
   allInclusiveKid: 0.5,
-  cancellationShare: 0.06,
+  cancellationShare: 0.05,
+  indexFloor: 0.35,
 };

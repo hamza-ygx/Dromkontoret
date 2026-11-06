@@ -2,8 +2,7 @@
 
 import { kr } from "@/lib/home/price";
 import { BUDGETS, DESTS, NIGHTS, PARTIES, TRIP_ADDONS, TRIP_STYLES, destById } from "@/lib/semester/catalog";
-import { DEST_RATES } from "@/lib/semester/rates";
-import { partyText } from "@/lib/semester/trip";
+import { partyText, spotRates } from "@/lib/semester/trip";
 import type { TripAddon, TripConfig } from "@/lib/semester/types";
 
 export function TripChooser({
@@ -25,7 +24,7 @@ export function TripChooser({
   const dest = destById(cfg.dest);
   const style = TRIP_STYLES.find((s) => s.id === cfg.style)!;
   const spot = style.beach ? dest.beach : dest.city;
-  const allIncOk = DEST_RATES[cfg.dest].allInclusive !== null;
+  const allIncOk = spotRates(cfg).allInclusive !== null;
 
   return (
     <section className={`chooser semester${open ? " open" : ""}`} aria-hidden={!open}>
@@ -124,7 +123,7 @@ export function TripChooser({
               const off = e.id === "allinc" && !allIncOk;
               const on = cfg.addons.includes(e.id) && !off;
               return (
-                <button key={e.id} className={on ? "on" : ""} disabled={off} title={off ? `Allt inkluderat är ovanligt i ${dest.label}` : undefined} onClick={() => toggle(e.id)}>
+                <button key={e.id} className={on ? "on" : ""} disabled={off} title={off ? `Allt inkluderat är ovanligt ${spot.prep} ${spot.name}` : undefined} onClick={() => toggle(e.id)}>
                   <span className="tick">{on ? "✓" : "+"}</span>
                   {e.label}
                 </button>
