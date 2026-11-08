@@ -113,6 +113,7 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
               toLabel={plan.place}
               jet={plan.trip.standard === "jet"}
               buildId={buildId}
+              active={visible && !open && !attract}
               onArrive={() => setArrived(true)}
             />
           )}

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { SPOTS } from "@/lib/semester/spots";
 import { DESTS } from "@/lib/semester/catalog";
 import { Mark } from "../designer/designer";
-import { clamp, ease, fitCanvas, paintBase, paintDot, paintPlane, paintRoute, projection, type LonLat } from "./globe-paint";
+import { clamp, ease, fitCanvas, paintBase, paintClouds, paintDot, paintPlane, paintRoute, paintTrail, projection, type LonLat } from "./globe-paint";
 
 const HOME: LonLat = [17.92, 59.65];
 const TARGETS = DESTS.filter((d) => d.id !== "sverige").flatMap((d) => (["beach", "city"] as const).map((k) => ({ at: [SPOTS[d.id][k].lon, SPOTS[d.id][k].lat] as LonLat, label: d[k].name })));
@@ -13,14 +13,20 @@ const TARGETS = DESTS.filter((d) => d.id !== "sverige").flatMap((d) => (["beach"
 function AttractGlobe() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cloudRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
     const wrap = wrapRef.current!;
     const ctx = canvas.getContext("2d")!;
+    const cloudCanvas = cloudRef.current!;
+    const cctx = cloudCanvas.getContext("2d")!;
     let w = 0, h = 0, raf = 0, next = 0, order = Math.floor(Math.random() * TARGETS.length);
     const arcs: { route: (t: number) => LonLat; to: LonLat; label: string; born: number }[] = [];
-    const ro = new ResizeObserver(() => ({ w, h } = fitCanvas(canvas, wrap)));
+    const ro = new ResizeObserver(() => {
+      ({ w, h } = fitCanvas(canvas, wrap));
+      fitCanvas(cloudCanvas, wrap);
+    });
     ro.observe(wrap);
     const t0 = performance.now();
     const tick = (now: number) => {
@@ -36,7 +42,8 @@ function AttractGlobe() {
         const center: LonLat = [22 + 55 * Math.sin(t * 0.09), 28 + 8 * Math.sin(t * 0.13)];
         const base = Math.min(w * 0.46, h * 0.36);
         const proj = projection(center, base, w / 2, h * 0.58);
-        const path = paintBase(ctx, proj, w, h, base);
+        const path = paintBase(ctx, proj, w, h, base, { sun: [30, -15] });
+        paintClouds(cctx, proj, w, h, base, t);
         paintDot(ctx, proj, center, HOME, "#14213a", "Stockholm", false);
         for (const a of arcs) {
           const age = (now - a.born) / 1000;
@@ -44,7 +51,10 @@ function AttractGlobe() {
           const alpha = clamp(1 - (age - 4.5) / 1.5, 0, 1);
           if (alpha <= 0) continue;
           paintRoute(ctx, path, a.route, head, alpha);
-          if (head < 1) paintPlane(ctx, proj, a.route, head, 22, "#c8a45c");
+          if (head < 1) {
+            paintTrail(ctx, path, a.route, head);
+            paintPlane(ctx, proj, a.route, head, 22, "#c8a45c");
+          }
           else paintDot(ctx, proj, center, a.to, "#c8a45c", a.label, true, alpha);
         }
       }
@@ -60,6 +70,7 @@ function AttractGlobe() {
   return (
     <div className="globe" ref={wrapRef}>
       <canvas ref={canvasRef} aria-hidden />
+      <canvas ref={cloudRef} className="clouds" aria-hidden />
     </div>
   );
 }

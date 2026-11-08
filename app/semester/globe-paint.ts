@@ -1,4 +1,4 @@
-import { geoDistance, geoGraticule10, geoOrthographic, geoPath, type GeoPermissibleObjects, type GeoProjection } from "d3-geo";
+import { geoCircle, geoDistance, geoGraticule10, geoOrthographic, geoPath, type GeoPermissibleObjects, type GeoProjection } from "d3-geo";
 import { feature } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
 import land110 from "world-atlas/land-110m.json";
@@ -19,6 +19,25 @@ export const loadHiRes = () =>
     landHi = toLand(m.default);
   }));
 
+const CITIES: LonLat[] = [
+  [-74, 40.7], [-87.6, 41.9], [-118.2, 34], [-122.4, 37.8], [-95.4, 29.8], [-80.2, 25.8], [-79.4, 43.7], [-73.6, 45.5], [-99.1, 19.4], [-43.2, -22.9],
+  [-46.6, -23.5], [-58.4, -34.6], [-70.7, -33.4], [-77, -12], [-74.1, 4.7], [-0.1, 51.5], [2.35, 48.86], [13.4, 52.5], [12.5, 41.9], [-3.7, 40.4],
+  [18.07, 59.33], [10.75, 59.9], [12.57, 55.68], [24.9, 60.2], [37.6, 55.75], [30.5, 50.45], [21, 52.2], [16.4, 48.2], [28.98, 41.01], [31.24, 30.04],
+  [3.4, 6.5], [36.8, -1.3], [28, -26.2], [18.4, -33.9], [46.7, 24.7], [55.3, 25.2], [51.4, 35.7], [67, 24.9], [72.9, 19.1], [77.2, 28.6],
+  [88.4, 22.6], [80.3, 13.1], [90.4, 23.8], [100.5, 13.75], [106.8, -6.2], [103.8, 1.35], [101.7, 3.1], [114.2, 22.3], [121.5, 31.2], [116.4, 39.9],
+  [126.98, 37.57], [139.7, 35.7], [135.5, 34.7], [151.2, -33.9], [144.96, -37.8], [174.8, -36.8], [120.98, 14.6], [113.3, 23.1], [104.1, 30.7], [-6.26, 53.35],
+];
+
+const rand = (i: number) => {
+  const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+const CLOUDS = Array.from({ length: 20 }, (_, i) => ({ lon: rand(i) * 360 - 180, lat: (rand(i + 50) - 0.5) * 110, r: 3 + rand(i + 99) * 5 }));
+
+export interface Sky {
+  sun: LonLat;
+}
+
 export const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
@@ -26,12 +45,21 @@ export function projection(center: LonLat, scale: number, cx: number, cy: number
   return geoOrthographic().rotate([-center[0], -center[1]]).scale(scale).translate([cx, cy]).clipAngle(90).precision(0.4);
 }
 
-export function paintBase(ctx: CanvasRenderingContext2D, proj: GeoProjection, w: number, h: number, base: number) {
+export function paintBase(ctx: CanvasRenderingContext2D, proj: GeoProjection, w: number, h: number, base: number, sky?: Sky) {
   const path = geoPath(proj, ctx);
   const scale = proj.scale();
   const [cx, cy] = proj.translate();
   ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
   ctx.clearRect(0, 0, w, h);
+  if (scale < Math.max(w, h)) {
+    const glow = ctx.createRadialGradient(cx, cy, scale * 0.96, cx, cy, scale * 1.16);
+    glow.addColorStop(0, "rgba(120,170,220,0.38)");
+    glow.addColorStop(1, "rgba(120,170,220,0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, scale * 1.16, 0, Math.PI * 2);
+    ctx.fill();
+  }
   const sea = ctx.createRadialGradient(cx - scale * 0.3, cy - scale * 0.35, scale * 0.1, cx, cy, scale);
   sea.addColorStop(0, "#eef4f8");
   sea.addColorStop(1, "#c9d9e6");
@@ -53,7 +81,75 @@ export function paintBase(ctx: CanvasRenderingContext2D, proj: GeoProjection, w:
   ctx.strokeStyle = "#cdbf9f";
   ctx.lineWidth = 0.8;
   ctx.stroke();
+  if (sky) paintSky(ctx, path, proj, sky, scale / base);
+  ctx.save();
+  ctx.beginPath();
+  path({ type: "Sphere" });
+  ctx.clip();
+  const limb = ctx.createRadialGradient(cx - scale * 0.25, cy - scale * 0.3, scale * 0.2, cx, cy, scale * 1.02);
+  limb.addColorStop(0, "rgba(255,255,255,0.18)");
+  limb.addColorStop(0.65, "rgba(255,255,255,0)");
+  limb.addColorStop(1, "rgba(20,33,58,0.22)");
+  ctx.fillStyle = limb;
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
   return path;
+}
+
+function paintSky(ctx: CanvasRenderingContext2D, path: ReturnType<typeof geoPath>, proj: GeoProjection, sky: Sky, zoom: number) {
+  const night: LonLat = [sky.sun[0] + 180, -sky.sun[1]];
+  for (const [r, a] of [[96, 0.05], [90, 0.06], [84, 0.07]] as const) {
+    ctx.beginPath();
+    path(geoCircle().center(night).radius(r)());
+    ctx.fillStyle = `rgba(20,33,58,${a})`;
+    ctx.fill();
+  }
+  const rotate = proj.rotate();
+  const center: LonLat = [-rotate[0], -rotate[1]];
+  const r = Math.min(4, 1.3 * Math.sqrt(zoom));
+  for (const c of CITIES) {
+    if (geoDistance(c, night) > (80 * Math.PI) / 180 || geoDistance(c, center) > Math.PI / 2) continue;
+    const xy = proj(c);
+    if (!xy) continue;
+    ctx.fillStyle = "rgba(255,206,120,0.28)";
+    ctx.beginPath();
+    ctx.arc(xy[0], xy[1], r * 2.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,226,160,0.95)";
+    ctx.beginPath();
+    ctx.arc(xy[0], xy[1], r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+export function paintClouds(ctx: CanvasRenderingContext2D, proj: GeoProjection, w: number, h: number, base: number, t: number) {
+  const path = geoPath(proj, ctx);
+  const zoom = proj.scale() / base;
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = `rgba(255,255,255,${zoom > 2.2 ? 0.12 : 0.22})`;
+  const drift = t * 0.8;
+  for (const c of CLOUDS) {
+    for (const [dx, dy, k] of [[0, 0, 1], [c.r * 0.9, c.r * 0.25, 0.65]] as const) {
+      ctx.beginPath();
+      path(geoCircle().center([c.lon + drift + dx, c.lat + dy]).radius(c.r * k).precision(10)());
+      ctx.fill();
+    }
+  }
+}
+
+export function paintTrail(ctx: CanvasRenderingContext2D, path: ReturnType<typeof geoPath>, route: (t: number) => LonLat, head: number) {
+  const step = 0.012;
+  ctx.lineCap = "round";
+  for (let i = 0; i < 10; i++) {
+    const a = head - step * (i + 1), b = head - step * i;
+    if (b <= 0) break;
+    ctx.beginPath();
+    path({ type: "LineString", coordinates: [route(Math.max(0, a)), route((a + b) / 2), route(b)] } as GeoPermissibleObjects);
+    ctx.strokeStyle = `rgba(255,255,255,${0.75 * (1 - i / 10)})`;
+    ctx.lineWidth = 6 - i * 0.4;
+    ctx.stroke();
+  }
 }
 
 export function paintRoute(ctx: CanvasRenderingContext2D, path: ReturnType<typeof geoPath>, route: (t: number) => LonLat, head: number, alpha = 1) {
