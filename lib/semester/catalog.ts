@@ -17,6 +17,14 @@ export const DESTS: { id: DestId; label: string; code: string; beach: Spot; city
   { id: "thailand", label: "Thailand", code: "TH", beach: { name: "Phuket", prep: "på" }, city: { name: "Bangkok", prep: "i" }, walls: { wall: "#f5efe3", wallTop: "#7a4e2d" } },
   { id: "usa", label: "USA", code: "US", beach: { name: "Florida", prep: "i" }, city: { name: "New York", prep: "i" }, ski: { name: "Aspen", prep: "i" }, walls: { wall: "#eef0f2", wallTop: "#33475b" } },
   { id: "japan", label: "Japan", code: "JP", beach: { name: "Okinawa", prep: "på" }, city: { name: "Tokyo", prep: "i" }, ski: { name: "Niseko", prep: "i" }, walls: { wall: "#f3efe6", wallTop: "#2b2b2b" } },
+  { id: "maldiverna", label: "Maldiverna", code: "MV", beach: { name: "Baa-atollen", prep: "på" }, city: { name: "Malé", prep: "i" }, walls: { wall: "#f4f7f6", wallTop: "#0f7c8c" } },
+  { id: "dubai", label: "Dubai", code: "AE", beach: { name: "Jumeirah Beach", prep: "på" }, city: { name: "Dubai", prep: "i" }, walls: { wall: "#f3ead9", wallTop: "#b08850" } },
+  { id: "bali", label: "Bali", code: "ID", beach: { name: "Seminyak", prep: "i" }, city: { name: "Ubud", prep: "i" }, walls: { wall: "#f1ecdf", wallTop: "#5f7f45" } },
+  { id: "mexiko", label: "Mexiko", code: "MX", beach: { name: "Tulum", prep: "i" }, city: { name: "Mexico City", prep: "i" }, walls: { wall: "#f6ece1", wallTop: "#b8432f" } },
+  { id: "island", label: "Island", code: "IS", beach: { name: "Vík", prep: "i" }, city: { name: "Reykjavik", prep: "i" }, walls: { wall: "#eef1f4", wallTop: "#2c4a6e" } },
+  { id: "schweiz", label: "Schweiz", code: "CH", beach: { name: "Zermatt", prep: "i" }, city: { name: "Zürich", prep: "i" }, ski: { name: "Zermatt", prep: "i" }, walls: { wall: "#f4f1ec", wallTop: "#b3242f" } },
+  { id: "sydafrika", label: "Sydafrika", code: "ZA", beach: { name: "Camps Bay", prep: "i" }, city: { name: "Kapstaden", prep: "i" }, safari: { name: "Kruger", prep: "i" }, walls: { wall: "#f2ead9", wallTop: "#1f6f4a" } },
+  { id: "karibien", label: "Karibien", code: "BL", beach: { name: "St Barth", prep: "på" }, city: { name: "Gustavia", prep: "i" }, walls: { wall: "#f3f6f7", wallTop: "#1b86a8" } },
   { id: "sverige", label: "Sverige", code: "SE", beach: { name: "Gotland", prep: "på" }, city: { name: "Stockholm", prep: "i" }, ski: { name: "Åre", prep: "i" }, walls: { wall: "#f4f1ea", wallTop: "#a3322a" } },
 ];
 
@@ -56,10 +64,12 @@ export const TRIP_STYLES: { id: TripStyle; label: string; hint: string; swatch: 
   { id: "aventyr", label: "Äventyr & natur", hint: "Vandring, dykning och båtturer", swatch: ["#4f7a4a", "#2f8fbf", "#d9a066"], slot: "beach" },
   { id: "kultur", label: "Mat & kultur", hint: "Matmarknader, vin och historia", swatch: ["#7a2e3a", "#d9b26f", "#f4ede0"], slot: "city" },
   { id: "skidor", label: "Skidor & alper", hint: "Pudersnö, liftar och afterski", swatch: ["#e9f0f6", "#3d5a80", "#c8a45c"], slot: "ski" },
-  { id: "golf", label: "Golf", hint: "Banor i världsklass och sol", swatch: ["#3f7d4e", "#e8dcc0", "#ffffff"], slot: "beach", dests: ["spanien", "portugal", "turkiet", "usa", "sverige", "frankrike"] },
+  { id: "golf", label: "Golf", hint: "Banor i världsklass och sol", swatch: ["#3f7d4e", "#e8dcc0", "#ffffff"], slot: "beach", dests: ["spanien", "portugal", "turkiet", "usa", "sverige", "frankrike", "dubai", "mexiko", "sydafrika"] },
   { id: "spa", label: "Spa & wellness", hint: "Behandlingar, yoga och lugn", swatch: ["#d9c7b8", "#8fb3a8", "#f6f1ea"], slot: "beach" },
   { id: "safari", label: "Safari", hint: "Big five från öppen jeep", swatch: ["#b08850", "#5c6b3a", "#e8d9b5"], slot: "safari" },
 ];
+
+export const MOUNTAIN: DestId[] = ["island", "schweiz"];
 
 export const styleById = (id: TripStyle) => TRIP_STYLES.find((t) => t.id === id)!;
 

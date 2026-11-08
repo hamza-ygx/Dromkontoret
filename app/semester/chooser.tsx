@@ -24,6 +24,7 @@ function Stepper({ label, hint, value, min, max, onChange }: { label: string; hi
 export function TripChooser({
   cfg,
   open,
+  note,
   canReturn,
   onChange,
   onBuild,
@@ -31,6 +32,7 @@ export function TripChooser({
 }: {
   cfg: TripConfig;
   open: boolean;
+  note?: string;
   canReturn: boolean;
   onChange: (patch: Partial<TripConfig>) => void;
   onBuild: () => void;
@@ -48,7 +50,8 @@ export function TripChooser({
       <div className="inner">
         <div className="intro">
           <span className="eyebrow">Revisionskonsulterna J Hägglund presenterar</span>
-          <h2>Vart räcker semesterkassan?</h2>
+          <h2>{note ? "Planera resa 2" : "Vart räcker semesterkassan?"}</h2>
+          {note && <p className="cmp-note">{note}</p>}
         </div>
 
         <div className="blk s-style">
@@ -151,10 +154,10 @@ export function TripChooser({
           </h3>
           <div className="extras">
             {TRIP_ADDONS.map((e) => {
-              const off = e.id === "allinc" && !allIncOk;
+              const off = (e.id === "allinc" && !allIncOk) || (e.id === "bil" && !spotRates(cfg).car);
               const on = cfg.addons.includes(e.id) && !off;
               return (
-                <button key={e.id} className={on ? "on" : ""} disabled={off} title={off ? `Allt inkluderat är ovanligt ${spot.prep} ${spot.name}` : undefined} onClick={() => toggle(e.id)}>
+                <button key={e.id} className={on ? "on" : ""} disabled={off} title={off ? `${e.label} finns inte ${spot.prep} ${spot.name}` : undefined} onClick={() => toggle(e.id)}>
                   <span className="tick">{on ? "✓" : "+"}</span>
                   {e.label}
                 </button>

@@ -1,4 +1,4 @@
-export type DestId = "sverige" | "spanien" | "grekland" | "italien" | "portugal" | "kroatien" | "turkiet" | "frankrike" | "thailand" | "usa" | "egypten" | "japan";
+export type DestId = "sverige" | "spanien" | "grekland" | "italien" | "portugal" | "kroatien" | "turkiet" | "frankrike" | "thailand" | "usa" | "egypten" | "japan" | "maldiverna" | "dubai" | "bali" | "mexiko" | "island" | "schweiz" | "sydafrika" | "karibien";
 export type BudgetId = "50-100" | "100-250" | "250-500" | "500-1000" | "1000+";
 export type Slot = "beach" | "city" | "ski" | "safari";
 export type Origin = "arlanda" | "landvetter" | "kastrup";

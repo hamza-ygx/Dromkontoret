@@ -125,3 +125,16 @@ Photos are Creative Commons or public-domain images found through Openverse (htt
 | `ACTIVITY_PER_DAY` | golf 2 200 (≈ 0.85 rounds per day: Spain ≈ €136, Portugal ≈ €116, Florida ≈ $258 green fees), spa 1 300 (one 50-min treatment, Yasuragi 1 290–1 390 kr), skidor 1 150 fallback | Resort green fees and spa price lists | Medium |
 
 Full tables and 46 source references: `docs/research/semester-trip-types-2026.md`.
+
+### New destinations, Zermatt and safari (added 8 Nov 2026)
+
+| What | Values | Basis | Confidence |
+| --- | --- | --- | --- |
+| Maldiverna (Baa-atollen, Malé), Dubai (Jumeirah Beach, Downtown), Bali (Seminyak, Ubud), Mexiko (Tulum, Mexico City), Island (Vík, Reykjavik), Schweiz (Zermatt summer, Zürich), Sydafrika (Camps Bay, Kapstaden), Karibien (St Barth, Gustavia) | Flight, night, food, index, car and all-inclusive per place in `DEST_RATES`; 64 sights with cirkapris in `SPOTS`; private-jet hours in `JET.hours` | Same method as the first 12 countries: momondo route and star-class averages cross-checked with ADR figures; Eurostat price levels (Switzerland, Iceland), GlobalCostData (Mexico, South Africa, Indonesia). Flight prices include the necessary connection (seaplane/domestic flight to Baa, Winair to St Barth, train to Zermatt) | Medium; price levels for UAE, Maldives, Malé and St Barth and the all-inclusive extras for Dubai and Mexico are estimates |
+| Maldiverna | No hire cars (`car: 0`), so the hire-car option is greyed out there | – | – |
+| Zermatt (ski) | Lift pass 1 200 kr/day; February nights 2 200 / 5 000 / 14 000; index 1.38 | Matterhorn ski paradise date-based prices, Eurostat (Switzerland 171 vs Sweden 124) | Estimate (pass), medium (index) |
+| Kruger (safari) | Flights 7 000 / 11 000 / 24 000; nights for two 1 300 (SANParks rest camp, self-catering) / 10 000 (lodge incl. full board and game drives) / 28 000 (Sabi Sand luxury lodge); conservation fee 380 kr per adult per day (R692 from 1 Nov 2026) | SANParks tariffs, lodge rate cards via search extracts | Medium-high (park fee), medium (lodges) |
+| `SAFARI` | At mellan level and above food is only drinks and extras (15 %) and game drives are included; budget level pays food, 950 × index per day for drives, plus the park fee | Lodges sell full board with two game drives per day | – |
+| `MOUNTAIN` | Iceland and Switzerland's nature places use mountain stay names (gästhus, hotell med utsikt, lyxlodge, privat lodge) and hotel photos instead of beach villas | – | – |
+
+Sources: `docs/research/semester-new-destinations-2026.md`, `docs/research/semester-trip-types-2026.md`. Malé's fish market and national museum were replaced by two free sights (the city beach and Republic Square) because no usable free photos existed.

@@ -1,4 +1,4 @@
-import { DESTS, STANDARD_LABEL, budgetById, destById, styleById } from "./catalog";
+import { DESTS, MOUNTAIN, STANDARD_LABEL, budgetById, destById, styleById } from "./catalog";
 import { ACTIVITY_PER_DAY, DEPARTURE, DEST_RATES, EXTRA, JET, KID, LIFT_PASS, ROOM, SAFARI, SKI_RENTAL, STANDARD_FACTOR, ULTRA } from "./rates";
 import { SPOTS } from "./spots";
 import type { CostLine, DestId, Slot, Standard, Trip, TripConfig, TripPlan, TripStyle } from "./types";
@@ -27,7 +27,7 @@ export function tripCost(cfg: TripConfig, s: Standard): Trip {
   const index = Math.max(EXTRA.indexFloor, r.index);
   const { adults, kids, nights } = cfg;
   const crowd = adults + kids;
-  const has = (a: TripConfig["addons"][number]) => cfg.addons.includes(a);
+  const has = (a: TripConfig["addons"][number]) => cfg.addons.includes(a) && (a !== "bil" || r.car > 0);
   const allInc = has("allinc") && r.allInclusive !== null;
   const eaters = adults + kids * KID.food;
   const doers = adults + kids * KID.activities;
@@ -88,13 +88,20 @@ const ACCOM: Record<Slot, Record<"mellan" | "lyx" | "ultra", string> & { budget:
   safari: { budget: ["Rest camp", "Rest camp"], mellan: "Safarilodge", lyx: "Lyxlodge", ultra: "Privat lodge" },
 };
 
+const MOUNTAIN_ACCOM: (typeof ACCOM)["beach"] = { budget: ["Gästhus", "Gästhus"], mellan: "Hotell med utsikt", lyx: "Lyxlodge", ultra: "Privat lodge med personal" };
+
+export const staySlot = (cfg: TripConfig): Slot => {
+  const slot = slotFor(cfg.style);
+  return slot === "beach" && MOUNTAIN.includes(cfg.dest) ? "city" : slot;
+};
+
 export function planTrip(cfg: TripConfig, pick?: Standard): TripPlan {
   const options = STANDARDS.map((s) => tripCost(cfg, s));
   const best = [...options].reverse().find((t) => t.fits) ?? options[0];
   const trip = pick ? options.find((t) => t.standard === pick)! : best;
   const slot = slotFor(cfg.style);
   const spot = destById(cfg.dest)[slot]!;
-  const a = ACCOM[slot];
+  const a = slot === "beach" && MOUNTAIN.includes(cfg.dest) ? MOUNTAIN_ACCOM : ACCOM[slot];
   const accom = trip.standard === "budget" ? a.budget[people(cfg) >= 4 ? 1 : 0] : a[trip.standard === "jet" ? "ultra" : trip.standard];
   return { config: cfg, trip, options, place: spot.name, title: `${accom} ${spot.prep} ${spot.name}`, slot };
 }
