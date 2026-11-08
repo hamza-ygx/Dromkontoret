@@ -112,3 +112,16 @@ Each place has four sights with a cirkapris per adult (0 = free). Prices were ch
 ### Photos (`public/photos`, credits in `lib/semester/photos.json`)
 
 Photos are Creative Commons or public-domain images found through Openverse (https://openverse.org) and shipped inside the app (no third-party requests at runtime). Only CC BY, CC BY-SA, CC0 and public-domain images are used; each one is cropped to 1024 × 650 and credited with photographer, license and source link in the large view.
+
+### Travellers, nights, departure and trip types (added 8 Nov 2026)
+
+| Key | Value | Basis | Confidence |
+| --- | --- | --- | --- |
+| `ROOM` | Room factor = max(0.85, adults × 0.5) + children × 0.22 (2 adults = 1 room) | Reproduces the earlier fixed groups (1 adult 0.85, 2 + 2 ≈ 1.45, 4 adults 2.0) and scales to 10 adults + 6 children | Estimate |
+| Transport | Taxis/transfers × 1.5 per started group of 4 above 2 people; one hire car per started 5 people | – | Estimate |
+| `DEPARTURE` | Göteborg (Landvetter): Europe × 1.00, long-haul × 1.05; Malmö (via Kastrup): Europe × 0.92, long-haul × 1.00; domestic trips from Göteborg/Malmö × 1.4 (connect via Arlanda) | Typical fares on sampled routes; Kastrup has more low-cost carriers to Europe, Landvetter few direct long-haul routes | Low (noisy data) |
+| `LIFT_PASS` | Åre 800, Chamonix 1 150, Cortina 990, Niseko 850, Aspen 2 500 kr per adult per day (high season 2026/27) + rental `SKI_RENTAL` 350 × price index | SkiStar price increase announcement, Mont-Blanc Unlimited, Dolomiti Superski 2026/27 (€89), Niseko All Mountain peak (¥13 500), Aspen Snowmass date-based prices ($209–279) | Medium-high (Cortina, Niseko), medium (rest) |
+| Ski places (`SPOTS[*].ski`, `DEST_RATES[*].ski`) | Åre, Chamonix, Cortina d'Ampezzo, Niseko, Aspen: flights to nearest airport, February nights (budget apartment / mellan 3–4★ / lyx 5★ or chalet), food, index | momondo route and star-class averages raised for February; Eurostat/GlobalCostData indices raised for resorts | Medium / estimate |
+| `ACTIVITY_PER_DAY` | golf 2 200 (≈ 0.85 rounds per day: Spain ≈ €136, Portugal ≈ €116, Florida ≈ $258 green fees), spa 1 300 (one 50-min treatment, Yasuragi 1 290–1 390 kr), skidor 1 150 fallback | Resort green fees and spa price lists | Medium |
+
+Full tables and 46 source references: `docs/research/semester-trip-types-2026.md`.

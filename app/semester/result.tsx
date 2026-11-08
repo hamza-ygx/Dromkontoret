@@ -2,7 +2,7 @@
 
 import { kr } from "@/lib/home/price";
 import { TRIP_STYLES, budgetById, budgetText, destById } from "@/lib/semester/catalog";
-import { partyText, standardLabel } from "@/lib/semester/trip";
+import { partyText, people as headcount, standardLabel } from "@/lib/semester/trip";
 import type { Standard, TripPlan } from "@/lib/semester/types";
 import { cardsFor } from "@/lib/semester/cards";
 import { Photo } from "./cards";
@@ -29,11 +29,11 @@ export function TripResult({
   const cap = budgetById(cfg.budget).max;
   const left = cap - trip.total;
   const open = !Number.isFinite(cap);
-  const people = cfg.party === "2+2" || cfg.party === "4" ? 4 : Number(cfg.party);
+  const people = headcount(cfg);
   return (
     <>
       <div className="thero">
-        <Photo id={`hero-${cfg.dest}-${plan.beach ? "beach" : "city"}`} alt={plan.place} eager />
+        <Photo id={`hero-${cfg.dest}-${plan.slot}`} alt={plan.place} eager />
       </div>
       <div className="head">
         <small>

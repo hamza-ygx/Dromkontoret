@@ -1,8 +1,25 @@
 "use client";
 
-import { BUDGETS, DESTS, NIGHTS, PARTIES, TRIP_ADDONS, TRIP_STYLES, budgetText, destById } from "@/lib/semester/catalog";
-import { partyText, spotRates } from "@/lib/semester/trip";
-import type { TripAddon, TripConfig } from "@/lib/semester/types";
+import { BUDGETS, DESTS, LIMITS, NIGHT_PRESETS, ORIGINS, TRIP_ADDONS, TRIP_STYLES, budgetText, destById, styleById } from "@/lib/semester/catalog";
+import { canGo, firstDest, partyText, slotFor, spotRates } from "@/lib/semester/trip";
+import type { TripAddon, TripConfig, TripStyle } from "@/lib/semester/types";
+
+function Stepper({ label, hint, value, min, max, onChange }: { label: string; hint: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
+  return (
+    <div className="stepper">
+      <button onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label={`Minska ${label}`}>
+        −
+      </button>
+      <span>
+        <b>{value}</b>
+        <small>{value === 1 ? label : hint}</small>
+      </span>
+      <button onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label={`Öka ${label}`}>
+        +
+      </button>
+    </div>
+  );
+}
 
 export function TripChooser({
   cfg,
@@ -20,10 +37,11 @@ export function TripChooser({
   onReturn: () => void;
 }) {
   const toggle = (a: TripAddon) => onChange({ addons: cfg.addons.includes(a) ? cfg.addons.filter((x) => x !== a) : [...cfg.addons, a] });
-  const dest = destById(cfg.dest);
-  const style = TRIP_STYLES.find((s) => s.id === cfg.style)!;
-  const spot = style.beach ? dest.beach : dest.city;
+  const setStyle = (style: TripStyle) => onChange(canGo(cfg.dest, style) ? { style } : { style, dest: firstDest(style) });
+  const slot = slotFor(cfg.style);
+  const spot = destById(cfg.dest)[slot]!;
   const allIncOk = spotRates(cfg).allInclusive !== null;
+  const from = ORIGINS.find((o) => o.id === cfg.from)!;
 
   return (
     <section className={`chooser semester${open ? " open" : ""}`} aria-hidden={!open}>
@@ -33,28 +51,49 @@ export function TripChooser({
           <h2>Vart räcker semesterkassan?</h2>
         </div>
 
-        <div className="blk b-type">
+        <div className="blk s-style">
           <h3>
-            <i>1</i>Resmål
+            <i>1</i>Typ av resa
           </h3>
-          <div className="dests">
-            {DESTS.map((d) => (
-              <button key={d.id} className={`dest${cfg.dest === d.id ? " on" : ""}`} onClick={() => onChange({ dest: d.id })}>
-                <span className="stamp" style={{ background: d.walls.wallTop }}>
-                  {d.code}
+          <div className="vibes eight">
+            {TRIP_STYLES.filter((v) => DESTS.some((d) => canGo(d.id, v.id))).map((v) => (
+              <button key={v.id} className={`vibe${cfg.style === v.id ? " on" : ""}`} onClick={() => setStyle(v.id)}>
+                <span className="sw">
+                  {v.swatch.map((c) => (
+                    <i key={c} style={{ background: c }} />
+                  ))}
                 </span>
-                <b>{d.label}</b>
-                <small>
-                  {d.beach.name} · {d.city.name}
-                </small>
+                <b>{v.label}</b>
+                <small>{v.hint}</small>
               </button>
             ))}
           </div>
         </div>
 
+        <div className="blk b-type">
+          <h3>
+            <i>2</i>Resmål
+            <em>{styleById(cfg.style).dests || slot === "ski" || slot === "safari" ? `Resmål för ${styleById(cfg.style).label.toLowerCase()}` : ""}</em>
+          </h3>
+          <div className="dests">
+            {DESTS.map((d) => {
+              const ok = canGo(d.id, cfg.style);
+              return (
+                <button key={d.id} className={`dest${cfg.dest === d.id ? " on" : ""}`} disabled={!ok} onClick={() => onChange({ dest: d.id })}>
+                  <span className="stamp" style={{ background: d.walls.wallTop }}>
+                    {d.code}
+                  </span>
+                  <b>{d.label}</b>
+                  <small>{ok ? d[slot]!.name : "Passar inte resan"}</small>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="blk s-budget">
           <h3>
-            <i>2</i>Budget för hela resan
+            <i>3</i>Budget för hela resan
           </h3>
           <div className="seg">
             {BUDGETS.map((b) => (
@@ -68,46 +107,39 @@ export function TripChooser({
 
         <div className="blk s-party">
           <h3>
-            <i>3</i>Resenärer
+            <i>4</i>Resenärer
           </h3>
-          <div className="seg four">
-            {PARTIES.map((p) => (
-              <button key={p.id} className={cfg.party === p.id ? "on" : ""} onClick={() => onChange({ party: p.id })}>
-                <b>{p.label}</b>
-                <small>{p.hint}</small>
-              </button>
-            ))}
+          <div className="steppers">
+            <Stepper label="vuxen" hint="vuxna" value={cfg.adults} min={LIMITS.adults[0]} max={LIMITS.adults[1]} onChange={(adults) => onChange({ adults })} />
+            <Stepper label="barn" hint="barn" value={cfg.kids} min={LIMITS.kids[0]} max={LIMITS.kids[1]} onChange={(kids) => onChange({ kids })} />
           </div>
         </div>
 
         <div className="blk s-nights">
           <h3>
-            <i>4</i>Nätter
+            <i>5</i>Nätter
           </h3>
-          <div className="seg four">
-            {NIGHTS.map((n) => (
-              <button key={n.id} className={cfg.nights === n.id ? "on" : ""} onClick={() => onChange({ nights: n.id })}>
-                <b>{n.label}</b>
-                <small>{n.hint}</small>
-              </button>
-            ))}
+          <div className="nights">
+            <Stepper label="natt" hint="nätter" value={cfg.nights} min={LIMITS.nights[0]} max={LIMITS.nights[1]} onChange={(nights) => onChange({ nights })} />
+            <div className="chips">
+              {NIGHT_PRESETS.map((p) => (
+                <button key={p.nights} className={cfg.nights === p.nights ? "on" : ""} onClick={() => onChange({ nights: p.nights })}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="blk s-style">
+        <div className="blk s-from">
           <h3>
-            <i>5</i>Typ av resa
+            <i>6</i>Avresa från
           </h3>
-          <div className="vibes">
-            {TRIP_STYLES.map((v) => (
-              <button key={v.id} className={`vibe${cfg.style === v.id ? " on" : ""}`} onClick={() => onChange({ style: v.id })}>
-                <span className="sw">
-                  {v.swatch.map((c) => (
-                    <i key={c} style={{ background: c }} />
-                  ))}
-                </span>
-                <b>{v.label}</b>
-                <small>{v.hint}</small>
+          <div className="seg three">
+            {ORIGINS.map((o) => (
+              <button key={o.id} className={cfg.from === o.id ? "on" : ""} onClick={() => onChange({ from: o.id })}>
+                <b>{o.label}</b>
+                <small>{o.airport}</small>
               </button>
             ))}
           </div>
@@ -115,7 +147,7 @@ export function TripChooser({
 
         <div className="blk s-extras">
           <h3>
-            <i>6</i>Tillval
+            <i>7</i>Tillval
           </h3>
           <div className="extras">
             {TRIP_ADDONS.map((e) => {
@@ -137,7 +169,7 @@ export function TripChooser({
               {spot.name} · {cfg.nights} nätter
             </b>
             <span>
-              {partyText(cfg)} · budget {budgetText(cfg.budget)}
+              {partyText(cfg)} · från {from.label} · budget {budgetText(cfg.budget)}
             </span>
           </p>
           {canReturn && (

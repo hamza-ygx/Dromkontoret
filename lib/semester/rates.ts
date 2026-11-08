@@ -1,4 +1,4 @@
-import type { BaseStandard, DestId, Standard, TripStyle } from "./types";
+import type { BaseStandard, DestId, Origin, Standard, TripStyle } from "./types";
 
 export interface SpotRates {
   flight: Record<BaseStandard, number>;
@@ -9,10 +9,11 @@ export interface SpotRates {
   allInclusive: number | null;
 }
 
-export const DEST_RATES: Record<DestId, { beach: SpotRates; city: SpotRates }> = {
+export const DEST_RATES: Record<DestId, { beach: SpotRates; city: SpotRates; ski?: SpotRates; safari?: SpotRates }> = {
   sverige: {
     beach: { flight: { budget: 600, mellan: 1_400, lyx: 2_800 }, night: { budget: 1_100, mellan: 2_300, lyx: 4_500 }, food: 600, index: 1.0, car: 550, allInclusive: null },
     city: { flight: { budget: 500, mellan: 1_200, lyx: 2_000 }, night: { budget: 900, mellan: 1_900, lyx: 4_000 }, food: 650, index: 1.0, car: 550, allInclusive: null },
+    ski: { flight: { budget: 1_100, mellan: 2_200, lyx: 4_500 }, night: { budget: 1_300, mellan: 2_600, lyx: 6_000 }, food: 700, index: 1.0, car: 550, allInclusive: null },
   },
   spanien: {
     beach: { flight: { budget: 1_500, mellan: 2_800, lyx: 8_000 }, night: { budget: 1_400, mellan: 2_300, lyx: 5_000 }, food: 425, index: 0.69, car: 250, allInclusive: 450 },
@@ -25,6 +26,7 @@ export const DEST_RATES: Record<DestId, { beach: SpotRates; city: SpotRates }> =
   italien: {
     beach: { flight: { budget: 2_000, mellan: 3_500, lyx: 10_000 }, night: { budget: 1_900, mellan: 3_000, lyx: 9_000 }, food: 600, index: 0.89, car: 400, allInclusive: null },
     city: { flight: { budget: 1_500, mellan: 2_400, lyx: 7_000 }, night: { budget: 1_000, mellan: 2_000, lyx: 5_000 }, food: 550, index: 0.89, car: 400, allInclusive: null },
+    ski: { flight: { budget: 1_600, mellan: 2_900, lyx: 8_500 }, night: { budget: 1_600, mellan: 3_500, lyx: 9_000 }, food: 650, index: 0.95, car: 450, allInclusive: null },
   },
   portugal: {
     beach: { flight: { budget: 1_800, mellan: 3_500, lyx: 8_000 }, night: { budget: 1_200, mellan: 1_800, lyx: 4_300 }, food: 375, index: 0.59, car: 250, allInclusive: null },
@@ -41,6 +43,7 @@ export const DEST_RATES: Record<DestId, { beach: SpotRates; city: SpotRates }> =
   frankrike: {
     beach: { flight: { budget: 1_600, mellan: 2_900, lyx: 8_500 }, night: { budget: 1_500, mellan: 2_500, lyx: 6_000 }, food: 575, index: 0.94, car: 350, allInclusive: null },
     city: { flight: { budget: 1_500, mellan: 3_500, lyx: 9_000 }, night: { budget: 1_200, mellan: 2_300, lyx: 7_000 }, food: 625, index: 0.94, car: 350, allInclusive: null },
+    ski: { flight: { budget: 1_800, mellan: 3_200, lyx: 9_500 }, night: { budget: 1_500, mellan: 3_000, lyx: 8_000 }, food: 650, index: 1.0, car: 550, allInclusive: null },
   },
   thailand: {
     beach: { flight: { budget: 6_000, mellan: 10_000, lyx: 22_000 }, night: { budget: 500, mellan: 1_200, lyx: 3_000 }, food: 275, index: 0.39, car: 300, allInclusive: 500 },
@@ -49,6 +52,7 @@ export const DEST_RATES: Record<DestId, { beach: SpotRates; city: SpotRates }> =
   usa: {
     beach: { flight: { budget: 5_000, mellan: 8_500, lyx: 19_000 }, night: { budget: 1_000, mellan: 1_900, lyx: 4_000 }, food: 700, index: 1.17, car: 450, allInclusive: null },
     city: { flight: { budget: 4_500, mellan: 7_300, lyx: 16_000 }, night: { budget: 1_800, mellan: 3_500, lyx: 7_000 }, food: 800, index: 1.17, car: 450, allInclusive: null },
+    ski: { flight: { budget: 6_500, mellan: 10_500, lyx: 23_000 }, night: { budget: 3_500, mellan: 7_000, lyx: 15_000 }, food: 1_000, index: 1.4, car: 900, allInclusive: null },
   },
   egypten: {
     beach: { flight: { budget: 3_300, mellan: 5_300, lyx: 13_000 }, night: { budget: 500, mellan: 900, lyx: 2_000 }, food: 200, index: 0.2, car: 400, allInclusive: 200 },
@@ -57,15 +61,23 @@ export const DEST_RATES: Record<DestId, { beach: SpotRates; city: SpotRates }> =
   japan: {
     beach: { flight: { budget: 7_000, mellan: 10_500, lyx: 23_000 }, night: { budget: 800, mellan: 1_500, lyx: 4_000 }, food: 450, index: 0.77, car: 500, allInclusive: null },
     city: { flight: { budget: 7_500, mellan: 10_000, lyx: 22_000 }, night: { budget: 900, mellan: 2_000, lyx: 4_500 }, food: 475, index: 0.77, car: 500, allInclusive: null },
+    ski: { flight: { budget: 9_000, mellan: 12_500, lyx: 27_500 }, night: { budget: 1_600, mellan: 3_800, lyx: 12_000 }, food: 750, index: 0.9, car: 700, allInclusive: null },
   },
 };
 
-export const PARTY = {
-  "1": { adults: 1, kids: 0, room: 0.85 },
-  "2": { adults: 2, kids: 0, room: 1 },
-  "2+2": { adults: 2, kids: 2, room: 1.45 },
-  "4": { adults: 4, kids: 0, room: 2 },
-} as const;
+export const ROOM = { single: 0.85, perAdult: 0.5, perKid: 0.22 };
+
+export const DEPARTURE: Record<Origin, { domestic: number; europe: number; longhaul: number }> = {
+  arlanda: { domestic: 1, europe: 1, longhaul: 1 },
+  landvetter: { domestic: 1.4, europe: 1, longhaul: 1.05 },
+  kastrup: { domestic: 1.4, europe: 0.92, longhaul: 1 },
+};
+
+export const LIFT_PASS: Partial<Record<DestId, number>> = { sverige: 800, frankrike: 1_150, italien: 990, japan: 850, usa: 2_500 };
+
+export const SKI_RENTAL = 350;
+
+export const SAFARI = { parkFee: 380, lodgeFrom: "mellan" as const };
 
 export const KID = { flight: 0.8, food: 0.6, activities: 0.5 };
 
@@ -91,7 +103,7 @@ export const STANDARD_FACTOR: Record<Standard, { food: number; activities: numbe
   jet: { food: 3.2, activities: 3.5 },
 };
 
-export const ACTIVITY_PER_DAY: Record<TripStyle, number> = { sol: 120, stad: 350, aventyr: 500, kultur: 300 };
+export const ACTIVITY_PER_DAY: Record<TripStyle, number> = { sol: 120, stad: 350, aventyr: 500, kultur: 300, skidor: 1_150, golf: 2_200, spa: 1_300, safari: 950 };
 
 export const EXTRA = {
   transportPerDay: 120,

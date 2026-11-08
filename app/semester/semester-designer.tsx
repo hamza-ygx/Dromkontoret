@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { cardsFor, spotFor } from "@/lib/semester/cards";
-import { ORIGIN } from "@/lib/semester/spots";
+import { originById } from "@/lib/semester/catalog";
 import { planTrip } from "@/lib/semester/trip";
 import type { Standard, TripConfig } from "@/lib/semester/types";
 import { Mark } from "../designer/designer";
@@ -14,7 +14,7 @@ import { Attract, StillHere, useIdle } from "./kiosk";
 import { Globe } from "./globe";
 import { TripResult, type TripTab } from "./result";
 
-const START: TripConfig = { dest: "grekland", budget: "100-250", party: "2", nights: 7, style: "sol", addons: [] };
+const START: TripConfig = { dest: "grekland", budget: "100-250", adults: 2, kids: 0, nights: 7, from: "arlanda", style: "sol", addons: [] };
 
 export function TripDesigner({ version, visible }: { version: string; visible: boolean }) {
   const [cfg, setCfg] = useState<TripConfig>(START);
@@ -107,9 +107,9 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
         <main className="stage tstage">
           {plan && spot && (
             <Globe
-              from={[ORIGIN.lon, ORIGIN.lat]}
+              from={[originById(plan.config.from).lon, originById(plan.config.from).lat]}
               to={[spot.lon, spot.lat]}
-              fromLabel={ORIGIN.name}
+              fromLabel={originById(plan.config.from).label}
               toLabel={plan.place}
               jet={plan.trip.standard === "jet"}
               buildId={buildId}

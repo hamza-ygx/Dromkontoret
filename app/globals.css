@@ -601,11 +601,25 @@ h1, h2, h3 { margin: 0; }
 /* ---------- drömsemestern ---------- */
 .appswitch .sm { display: none; }
 .semester .s-budget, .semester .s-party { grid-column: span 6; }
-.semester .s-nights { grid-column: span 4; }
-.semester .s-style { grid-column: span 8; }
+.semester .s-nights, .semester .s-from { grid-column: span 6; }
+.semester .s-style { grid-column: span 12; }
 .semester .s-extras { grid-column: span 12; }
 .semester .s-extras .extras { grid-template-columns: repeat(4, 1fr); }
 .seg.four { grid-template-columns: repeat(4, 1fr); }
+.seg.three { grid-template-columns: repeat(3, 1fr); }
+.steppers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stepper { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); }
+.stepper button { flex: none; width: 48px; height: 48px; border-radius: 10px; border: 1px solid var(--line-strong); background: var(--surface-2); font-size: 24px; line-height: 1; color: var(--ink); }
+.stepper button:not(:disabled):active { background: var(--gold-soft); border-color: var(--gold); }
+.stepper button:disabled { opacity: 0.35; }
+.stepper span { flex: 1; display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.stepper b { font-family: var(--font-display), serif; font-size: 26px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.stepper small { font-size: 11px; color: var(--dim); }
+.nights { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 10px; align-items: center; }
+.nights .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.nights .chips button { justify-content: center; min-height: 44px; }
+.dest:disabled { opacity: 0.38; box-shadow: none; background: var(--surface-2); }
+.dest:disabled .stamp { filter: grayscale(1); }
 .semester .seg b { font-size: 22px; white-space: nowrap; }
 .dests { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
 .dest { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; text-align: left; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); transition: border-color 0.15s, background 0.15s, transform 0.1s; }
@@ -724,7 +738,7 @@ h1, h2, h3 { margin: 0; }
 @media (max-width: 1100px) {
   .chooser .inner { padding: 22px 24px 26px; gap: 20px; }
   .dests { grid-template-columns: repeat(4, 1fr); }
-  .semester .s-budget, .semester .s-party, .semester .s-nights, .semester .s-style { grid-column: span 12; }
+  .semester .s-budget, .semester .s-party, .semester .s-nights, .semester .s-from, .semester .s-style { grid-column: span 12; }
   .b-rooms, .b-vibe, .b-area, .b-extras { grid-column: span 12; }
   .body { grid-template-columns: minmax(0, 1fr) 320px; }
 }
@@ -739,6 +753,8 @@ h1, h2, h3 { margin: 0; }
   .dests { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .semester .s-extras .extras { grid-template-columns: 1fr 1fr; }
   .semester .s-budget .seg { grid-template-columns: repeat(3, 1fr); }
+  .nights { grid-template-columns: 1fr; }
+  .stepper button { width: 44px; height: 44px; }
   .semester .s-budget .seg b { font-size: 18px; }
   .mark { padding-right: 12px; }
   .body { display: flex; flex-direction: column; flex: 1; }
