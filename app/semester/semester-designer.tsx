@@ -10,6 +10,7 @@ import { StageActions } from "../designer/stage-actions";
 import { AppSwitch } from "../switch";
 import { CardFan, Lightbox } from "./cards";
 import { TripChooser } from "./chooser";
+import { Attract, StillHere, useIdle } from "./kiosk";
 import { Globe } from "./globe";
 import { TripResult, type TripTab } from "./result";
 
@@ -24,11 +25,17 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
   const [arrived, setArrived] = useState(false);
   const [card, setCard] = useState<string | null>(null);
   const [tab, setTab] = useState<TripTab>("kostnad");
+  const [attract, setAttract] = useState(true);
+  const [stillHere, setStillHere] = useState(false);
 
   const plan = useMemo(() => (built ? planTrip(built, pick) : null), [built, pick]);
   const cards = useMemo(() => (plan ? cardsFor(plan) : []), [plan]);
   const spot = plan ? spotFor(plan) : null;
   const opened = cards.find((c) => c.id === card);
+  const step = (d: number) => {
+    const i = cards.findIndex((c) => c.id === card);
+    if (i >= 0) setCard(cards[(i + d + cards.length) % cards.length].id);
+  };
 
   const build = useCallback((c: TripConfig) => {
     setBuilt(c);
@@ -51,6 +58,16 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
     setPick(s);
     setCard(null);
   };
+  const toAttract = useCallback(() => {
+    setCfg(START);
+    setBuilt(null);
+    setPick(undefined);
+    setCard(null);
+    setOpen(true);
+    setStillHere(false);
+    setAttract(true);
+  }, []);
+  useIdle(visible && !attract && !stillHere, 75_000, () => (built || cfg !== START ? setStillHere(true) : toAttract()));
   const replay = () => {
     setArrived(false);
     setCard(null);
@@ -66,13 +83,16 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
         else document.documentElement.requestFullscreen?.().catch(() => {});
       }
       if (e.key === "Escape") setCard(null);
+      if (opened && (e.key === "ArrowRight" || e.key === "ArrowLeft")) step(e.key === "ArrowRight" ? 1 : -1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cfg, build, open, visible]);
+  }, [cfg, build, open, visible, opened]);
 
   return (
-    <div className="app">
+    <div className="app trip-app">
+      {attract && visible && <Attract onStart={() => setAttract(false)} />}
+      {stillHere && <StillHere seconds={10} onStay={() => setStillHere(false)} onLeave={toAttract} />}
       <header className="topbar">
         <Mark />
         <div className="brand">
@@ -107,7 +127,7 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
               </button>
             </StageActions>
           )}
-          {opened && <Lightbox card={opened} onClose={() => setCard(null)} />}
+          {opened && <Lightbox card={opened} index={cards.indexOf(opened)} count={cards.length} onStep={step} onClose={() => setCard(null)} />}
         </main>
 
         <aside className="result">

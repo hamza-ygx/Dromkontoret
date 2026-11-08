@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { TripCard } from "@/lib/semester/cards";
 import PHOTOS from "@/lib/semester/photos.json";
 
@@ -49,8 +49,9 @@ export function CardFan({ cards, place, onOpen }: { cards: TripCard[]; place: st
   );
 }
 
-export function Lightbox({ card, onClose }: { card: TripCard; onClose: () => void }) {
+export function Lightbox({ card, index, count, onStep, onClose }: { card: TripCard; index: number; count: number; onStep: (d: number) => void; onClose: () => void }) {
   const c = credit(card.id);
+  const swipe = useRef<number | null>(null);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -58,22 +59,34 @@ export function Lightbox({ card, onClose }: { card: TripCard; onClose: () => voi
   }, [onClose]);
   return (
     <div className="tlight" onClick={onClose}>
-      <figure onClick={(e) => e.stopPropagation()}>
+      <figure
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => (swipe.current = e.clientX)}
+        onPointerUp={(e) => {
+          if (swipe.current !== null && Math.abs(e.clientX - swipe.current) > 50) onStep(e.clientX < swipe.current ? 1 : -1);
+          swipe.current = null;
+        }}
+      >
         <button className="x" onClick={onClose} aria-label="Stäng">
           ×
         </button>
-        <Photo id={card.id} alt={card.name} eager />
+        <button className="nav prev" onClick={() => onStep(-1)} aria-label="Föregående">
+          ‹
+        </button>
+        <button className="nav next" onClick={() => onStep(1)} aria-label="Nästa">
+          ›
+        </button>
+        <Photo key={card.id} id={card.id} alt={card.name} eager />
         <figcaption>
           <div>
             <b>{card.name}</b>
             <p>{card.line}</p>
           </div>
           <strong>{card.price}</strong>
-          {c && (
-            <small>
-              Foto: {c.author} · {c.license} · {c.src.includes("flickr") ? "Flickr" : "Wikimedia Commons"}
-            </small>
-          )}
+          <small>
+            {index + 1} av {count}
+            {c && ` · Foto: ${c.author} · ${c.license} · ${c.src.includes("flickr") ? "Flickr" : "Wikimedia Commons"}`}
+          </small>
         </figcaption>
       </figure>
     </div>
