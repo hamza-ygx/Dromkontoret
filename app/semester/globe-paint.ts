@@ -152,7 +152,7 @@ export function paintTrail(ctx: CanvasRenderingContext2D, path: ReturnType<typeo
   }
 }
 
-export function paintRoute(ctx: CanvasRenderingContext2D, path: ReturnType<typeof geoPath>, route: (t: number) => LonLat, head: number, alpha = 1) {
+export function paintRoute(ctx: CanvasRenderingContext2D, path: ReturnType<typeof geoPath>, route: (t: number) => LonLat, head: number, alpha = 1, color = "#c8a45c") {
   const steps = 80;
   ctx.globalAlpha = alpha;
   ctx.beginPath();
@@ -166,7 +166,7 @@ export function paintRoute(ctx: CanvasRenderingContext2D, path: ReturnType<typeo
     const n = Math.max(2, Math.ceil(steps * head));
     ctx.beginPath();
     path({ type: "LineString", coordinates: Array.from({ length: n + 1 }, (_, i) => route((i / n) * head)) } as GeoPermissibleObjects);
-    ctx.strokeStyle = "#c8a45c";
+    ctx.strokeStyle = color;
     ctx.lineWidth = 3;
     ctx.lineCap = "round";
     ctx.stroke();

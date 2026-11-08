@@ -10,6 +10,7 @@ import { StageActions } from "../designer/stage-actions";
 import { AppSwitch } from "../switch";
 import { CardFan, Lightbox } from "./cards";
 import { TripChooser } from "./chooser";
+import { Compare } from "./compare";
 import { Attract, StillHere, useIdle } from "./kiosk";
 import { Globe } from "./globe";
 import { TripResult, type TripTab } from "./result";
@@ -27,11 +28,14 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
   const [tab, setTab] = useState<TripTab>("kostnad");
   const [attract, setAttract] = useState(true);
   const [stillHere, setStillHere] = useState(false);
+  const [compareWith, setCompareWith] = useState<{ cfg: TripConfig; pick?: Standard } | null>(null);
+  const [comparing, setComparing] = useState(false);
 
   const plan = useMemo(() => (built ? planTrip(built, pick) : null), [built, pick]);
   const cards = useMemo(() => (plan ? cardsFor(plan) : []), [plan]);
   const spot = plan ? spotFor(plan) : null;
   const opened = cards.find((c) => c.id === card);
+  const first = useMemo(() => (compareWith ? planTrip(compareWith.cfg, compareWith.pick) : null), [compareWith]);
   const step = (d: number) => {
     const i = cards.findIndex((c) => c.id === card);
     if (i >= 0) setCard(cards[(i + d + cards.length) % cards.length].id);
@@ -51,6 +55,8 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
     setBuilt(null);
     setPick(undefined);
     setCard(null);
+    setCompareWith(null);
+    setComparing(false);
     setOpen(true);
   };
   const choose = (s: Standard) => {
@@ -65,6 +71,8 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
     setCard(null);
     setOpen(true);
     setStillHere(false);
+    setCompareWith(null);
+    setComparing(false);
     setAttract(true);
   }, []);
   useIdle(visible && !attract && !stillHere, 75_000, () => (built || cfg !== START ? setStillHere(true) : toAttract()));
@@ -114,7 +122,10 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
               jet={plan.trip.standard === "jet"}
               buildId={buildId}
               active={visible && !open && !attract}
-              onArrive={() => setArrived(true)}
+              onArrive={() => {
+                setArrived(true);
+                if (compareWith) setComparing(true);
+              }}
             />
           )}
           {plan && arrived && <CardFan key={`${buildId}-${plan.trip.standard}`} cards={cards} place={plan.place} onOpen={setCard} />}
@@ -126,7 +137,39 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
                 </svg>
                 Flyg igen
               </button>
+              <button
+                className="act"
+                onClick={() => {
+                  if (first) return setComparing(true);
+                  setCompareWith({ cfg: plan.config, pick });
+                  setOpen(true);
+                }}
+              >
+                <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden>
+                  <path d="M7 4v12M13 4v12M3 8l4-4 4 4M9 12l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {first ? "Visa jämförelse" : "Jämför"}
+              </button>
             </StageActions>
+          )}
+          {comparing && first && plan && (
+            <Compare
+              plans={[first, plan]}
+              onClose={() => {
+                setComparing(false);
+                setCompareWith(null);
+              }}
+              onPick={(i) => {
+                setComparing(false);
+                setCompareWith(null);
+                if (i === 0 && compareWith) {
+                  setBuilt(compareWith.cfg);
+                  setPick(compareWith.pick);
+                  setArrived(false);
+                  setBuildId((n) => n + 1);
+                }
+              }}
+            />
           )}
           {opened && <Lightbox card={opened} index={cards.indexOf(opened)} count={cards.length} onStep={step} onClose={() => setCard(null)} />}
         </main>
@@ -143,7 +186,7 @@ export function TripDesigner({ version, visible }: { version: string; visible: b
           )}
         </aside>
 
-        <TripChooser cfg={cfg} open={open} canReturn={!!built} onChange={(patch) => setCfg({ ...cfg, ...patch })} onBuild={() => build(cfg)} onReturn={() => setOpen(false)} />
+        <TripChooser cfg={cfg} open={open} note={compareWith && first ? `Resa 2 – jämförs med ${first.title.toLowerCase()}` : undefined} canReturn={!!built} onChange={(patch) => setCfg({ ...cfg, ...patch })} onBuild={() => build(cfg)} onReturn={() => setOpen(false)} />
       </div>
     </div>
   );
