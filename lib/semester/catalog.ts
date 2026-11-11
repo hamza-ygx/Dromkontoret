@@ -44,7 +44,7 @@ export const budgetText = (id: BudgetId) => (id === "1000+" ? "över 1 Mkr" : `$
 export const ORIGINS: { id: Origin; label: string; airport: string; lat: number; lon: number }[] = [
   { id: "arlanda", label: "Stockholm", airport: "Arlanda", lat: 59.65, lon: 17.92 },
   { id: "landvetter", label: "Göteborg", airport: "Landvetter", lat: 57.67, lon: 12.29 },
-  { id: "kastrup", label: "Malmö", airport: "via Kastrup", lat: 55.62, lon: 12.65 },
+  { id: "kastrup", label: "Köpenhamn", airport: "Kastrup", lat: 55.62, lon: 12.65 },
 ];
 
 export const originById = (id: Origin) => ORIGINS.find((o) => o.id === id)!;
